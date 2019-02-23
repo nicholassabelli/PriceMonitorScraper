@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import logging
 from scrapy.spiders import Spider, SitemapSpider
 from scrapy.loader import ItemLoader
@@ -8,13 +9,12 @@ class TheSource:
     allowed_domains = ['thesource.ca']
     custom_settings = {
         'ITEM_PIPELINES': {
-            'price_monitor.pipelines.BestBuyTagsPipeline': 300,
+            'price_monitor.pipelines.TagsPipeline': 300,
         }
     }
 
     def parse_product(self, response):
         productLoader = ProductItemLoader(response=response)
-
         productLoader.add_css('name', ['title'])
         productLoader.add_css('description', ['head > meta[name="description"]::attr(content)'])
         productLoader.add_value('currentPrice', [self.__get_price(response)])

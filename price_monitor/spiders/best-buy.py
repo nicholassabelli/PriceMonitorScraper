@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import logging
+
+import logging, json, re
 from scrapy.spiders import Spider, SitemapSpider
 from scrapy.loader import ItemLoader
 from price_monitor.items import PriceItemLoader, ProductItemLoader
@@ -8,13 +9,26 @@ class BestBuy:
     allowed_domains = ['bestbuy.ca']
     custom_settings = {
         'ITEM_PIPELINES': {
-            'price_monitor.pipelines.BestBuyTagsPipeline': 300,
+            'price_monitor.pipelines.TagsPipeline': 300,
         }
     }
 
     def parse_product(self, response):
-        productLoader = ProductItemLoader(response=response)
+        # texts = response.xpath('//script/text()')[0].re(".*brand.*")
+        texts = response.xpath('//script/text()')
 
+        for text in texts:
+            match = text.re(".*var data_layer =.*")
+
+            if match:
+                # strip = match[0].strip()
+                # split = match[0].strip().split('var data_layer =')[1].split(';')
+                # split = split[1].split(';')
+                brand = json.loads(match[0].strip().split('var data_layer =')[1].split(';')[0])['brand']
+                # logging.info(brand)
+                # MISCELLANEOUS
+            
+        productLoader = ProductItemLoader(response=response)
         productLoader.add_css('name', ['head > meta[property="og:title"]::attr(content)'])
         productLoader.add_css('description', ['head > meta[name="description"]::attr(content)'])
         productLoader.add_css('releaseDate', ['#ctl00_CP_ctl00_PD_lblReleaseDate'])
@@ -22,6 +36,8 @@ class BestBuy:
         productLoader.add_value('url', [response.url])
         productLoader.add_css('availability', ['#schemaorg-offer > div.price-module.clearfix > div.price-wrapper.price-extra-large > link[itemprop="availability"]::attr(href)'])
         productLoader.add_css('tags', ['head > meta[name="keywords"]::attr(content)'])
+        # productLoader.add_css('brand', ['div[data-brand-bar]::attr(data-brand-bar)'])
+        productLoader.add_value('brand', [brand])
         return productLoader.load_item()
 
     def __get_price(self, response):
@@ -52,6 +68,7 @@ class BestBuySpider(Spider):
     custom_settings = BestBuy.custom_settings
     start_urls = [
         'https://www.bestbuy.ca/en-ca/product/spider-man-ps4/10439890.aspx',
+        'https://www.bestbuy.ca/en-ca/product/apple-macbook-pro-with-touch-bar-13-3-space-grey-intel-core-i5-2-3ghz-256gb-8gb-ram-english/12727808.aspx?',
     ]
 
     def __init__(self, *a, **kw):
