@@ -88,3 +88,7 @@ class ProductItemLoader(ItemLoader):
 
 class IGAProductItemLoader(ProductItemLoader):
     default_input_processor = MapCompose(remove_tags, replace_escape_chars, lambda x: ' '.join(x.split()))
+
+class MetroProductItemLoader(ProductItemLoader):
+    tags_in = None
+    tags_out = Identity()

@@ -10,11 +10,9 @@ class IGA:
     allowed_domains = ['iga.net']
     custom_settings = {
         'ITEM_PIPELINES': {
-    #         'price_monitor.pipelines.TagsPipeline': 300,
             'price_monitor.pipelines.IGAStripAmountPipeline': 300,
             'price_monitor.pipelines.BreadcrumbTagsPipeline': 800,
             'price_monitor.pipelines.IGAUniversalProductCodePipeline': 900,
-            
         }
     }
 

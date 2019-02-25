@@ -7,7 +7,7 @@
 
 import logging
 from urllib.parse import unquote
-from price_monitor.items import Product
+from price_monitor.items import Price, Product
 from price_monitor.models import Availability, UniversalProductCode
 
 class PriceMonitorPipeline(object):
@@ -28,20 +28,27 @@ class BreadcrumbTagsPipeline(TagsPipeline):
 
         return item
 
+# class MetroBreadcrumbTagsPipeline(BreadcrumbTagsPipeline):
+#     def process_item(self, item, spider):
+#         if item.get(Product.KEY_TAGS):
+#             item[Product.KEY_TAGS] = unquote(item[Product.KEY_TAGS]).split('/')
+
+#         return item
+
 class StripAmountPipeline(PriceMonitorPipeline):
     def process_item(self, item, spider):
-        if item.get('currentPrice').get('amount'):
-            item['currentPrice']['amount'] = item['currentPrice']['amount'].strip('$')
+        if item.get(Product.KEY_CURRENT_PRICE).get(Price.KEY_AMOUNT):
+            item[Product.KEY_CURRENT_PRICE][Price.KEY_AMOUNT] = item[Product.KEY_CURRENT_PRICE][Price.KEY_AMOUNT].strip('$')
         
         return item
 
 class IGAStripAmountPipeline(StripAmountPipeline):
     def process_item(self, item, spider):
-        if item.get('currentPrice').get('amount'):
-            item['currentPrice']['amount'] = item['currentPrice']['amount'].strip('$')
-            item['availability'] = Availability.IN_STOCK
+        if item.get(Product.KEY_CURRENT_PRICE).get(Price.KEY_AMOUNT):
+            item[Product.KEY_CURRENT_PRICE][Price.KEY_AMOUNT] = item[Product.KEY_CURRENT_PRICE][Price.KEY_AMOUNT].strip('$')
+            item[Product.KEY_AVAILABILITY] = Availability.IN_STOCK
         else:
-            item['availability'] = Availability.OUT_OF_STOCK
+            item[Product.KEY_AVAILABILITY] = Availability.OUT_OF_STOCK
         
         return item
 
@@ -52,7 +59,6 @@ class UniversalProductCodePipeline(PriceMonitorPipeline):
 class IGAUniversalProductCodePipeline(UniversalProductCodePipeline):
     def process_item(self, item, spider):
         if item.get(Product.KEY_UPC):
-            # Why does this one need the tiem?
             item[Product.KEY_UPC] = UniversalProductCode(item[Product.KEY_UPC].split('_')[1]).value
         
         return item
