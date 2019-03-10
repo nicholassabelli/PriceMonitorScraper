@@ -7,6 +7,7 @@ from price_monitor.items import Price, Product, PriceItemLoader, IGAProductItemL
 from price_monitor.models import Currency
 
 class IGA:
+    store_name = 'IGA'
     allowed_domains = ['iga.net']
     custom_settings = {
         'ITEM_PIPELINES': {
@@ -22,7 +23,7 @@ class IGA:
         productLoader.add_value(Product.KEY_CURRENT_PRICE, [self.__get_price(response)])
         productLoader.add_value(Product.KEY_URL, [response.url])
         productLoader.add_css(Product.KEY_BRAND, ['span.product-detail__brand'])
-        productLoader.add_xpath(Product.KEY_TAGS, '//ul[contains(concat(" ", normalize-space(@class), " "), " breadcrumb ")]/li[last()-1]/a/@href')
+        productLoader.add_xpath(Product.KEY_TAGS, ['//ul[contains(concat(" ", normalize-space(@class), " "), " breadcrumb ")]/li[last()-1]/a/@href'])
         productLoader.add_value(Product.KEY_UPC, [response.url])
         return productLoader.load_item()
 

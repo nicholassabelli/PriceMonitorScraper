@@ -1,12 +1,22 @@
 # -*- coding: utf-8 -*-
+from enum import Enum
 
-class Availability:
-    IN_STOCK     = 'In Stock'
-    OUT_OF_STOCK = 'Out of Stock'
+# Enum?
+class Availability(Enum):
+    # IN_STOCK     = 'In Stock'
+    # OUT_OF_STOCK = 'Out of Stock'
+    OUT_OF_STOCK = 0
+    IN_STOCK = 1
+    UNKNOWN = 2
 
-class Currency:
+class Currency(Enum):
     CAD = 'CAD'
     USD = 'USD'
+
+class Language(Enum):
+    EN = 'en'
+    ES = 'es'
+    FR = 'fr'
 
 class UniversalProductCode:
     LENGTH_OF_UPC = 12
@@ -49,6 +59,6 @@ class UniversalProductCode:
         # If the remainder is equal to 0 then use 0 as the check digit, and if not 0 subtract the remainder from 10 to derive the check digit.
         return 10 - (result % 10)
 
-test = UniversalProductCode('000000005692001210')
+# test = UniversalProductCode('000000005692001210')
 
-print(test.value)
+# print(test.value)

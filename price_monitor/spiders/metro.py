@@ -7,13 +7,9 @@ from price_monitor.items import Price, Product, PriceItemLoader, MetroProductIte
 from price_monitor.models import Currency
 
 class Metro:
+    store_name = 'Metro'
     allowed_domains = ['metro.ca']
     custom_settings = {
-        'ITEM_PIPELINES': {
-            # 'price_monitor.pipelines.IGAStripAmountPipeline': 300,
-            # 'price_monitor.pipelines.BreadcrumbTagsPipeline': 800,
-            # 'price_monitor.pipelines.IGAUniversalProductCodePipeline': 900,
-        }
     }
 
     def parse_product(self, response):

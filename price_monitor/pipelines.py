@@ -28,23 +28,16 @@ class BreadcrumbTagsPipeline(TagsPipeline):
 
         return item
 
-# class MetroBreadcrumbTagsPipeline(BreadcrumbTagsPipeline):
-#     def process_item(self, item, spider):
-#         if item.get(Product.KEY_TAGS):
-#             item[Product.KEY_TAGS] = unquote(item[Product.KEY_TAGS]).split('/')
-
-#         return item
-
 class StripAmountPipeline(PriceMonitorPipeline):
     def process_item(self, item, spider):
-        if item.get(Product.KEY_CURRENT_PRICE).get(Price.KEY_AMOUNT):
+        if item.get(Product.KEY_CURRENT_PRICE) and item.get(Product.KEY_CURRENT_PRICE).get(Price.KEY_AMOUNT):
             item[Product.KEY_CURRENT_PRICE][Price.KEY_AMOUNT] = item[Product.KEY_CURRENT_PRICE][Price.KEY_AMOUNT].strip('$')
         
         return item
 
 class IGAStripAmountPipeline(StripAmountPipeline):
     def process_item(self, item, spider):
-        if item.get(Product.KEY_CURRENT_PRICE).get(Price.KEY_AMOUNT):
+        if item.get(Product.KEY_CURRENT_PRICE) and item.get(Product.KEY_CURRENT_PRICE).get(Price.KEY_AMOUNT):
             item[Product.KEY_CURRENT_PRICE][Price.KEY_AMOUNT] = item[Product.KEY_CURRENT_PRICE][Price.KEY_AMOUNT].strip('$')
             item[Product.KEY_AVAILABILITY] = Availability.IN_STOCK
         else:

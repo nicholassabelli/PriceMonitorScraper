@@ -28,25 +28,25 @@ class Product(Item):
     # Array indexes.
     KEY_NAME = 'name'
     KEY_DESCRIPTION = 'description'
-    KEY_CURRENT_PRICE = 'currentPrice'
+    KEY_CURRENT_PRICE = 'current_price'
     KEY_URL = 'url'
-    KEY_RELEASE_DATE = 'releaseDate'
-    KEY_AVAILABILITY = 'availability'
+    KEY_RELEASE_DATE = 'release_date'
+    KEY_AVAILABILITY = 'availability' # Enum?
     KEY_UPC = 'upc'
     KEY_TAGS = 'tags'
     KEY_BRAND = 'brand'
     KEY_LENGTH = 'length'
     KEY_WIDTH = 'width'
     KEY_HEIGHT = 'height'
-    KEY_WEIGHT_OR_VOLUME = 'weightOrVolume'
+    KEY_WEIGHT_OR_VOLUME = 'weight_or_volume'
     KEY_SIZE = 'size'
 
     # Fields.
     name = Field()
     description = Field()
-    currentPrice = Field()
+    current_price = Field()
     url = Field()
-    releaseDate = Field()
+    release_date = Field()
     availability = Field()
     upc = Field()
     tags = Field()
@@ -54,13 +54,19 @@ class Product(Item):
     length = Field()
     width = Field()
     height = Field()
-    weightOrVolume = Field()
-    size = Field()
-    # soldby
+    weight_or_volume = Field()
+    # size = Field()
+    # store and sold by are different 
     # images
+    colour = Field()
+    sold_by = Field()
 
 class Food(Product):
     pass
+
+# Clothing or accessory. 
+class Clothing():
+    size = Field()
 
 class VideoGame(Product):
     # Fields.
@@ -81,14 +87,12 @@ class PriceItemLoader(ItemLoader):
 
 class ProductItemLoader(ItemLoader):
     default_input_processor = MapCompose(remove_tags, replace_escape_chars)
-    default_output_processor = TakeFirst()       # move to property to allow again
+    default_output_processor = TakeFirst()
     default_item_class = Product
-    currentPrice_in = Identity() # handle quebec prices
-    # idk what that means
+    current_price_in = Identity()
 
 class IGAProductItemLoader(ProductItemLoader):
     default_input_processor = MapCompose(remove_tags, replace_escape_chars, lambda x: ' '.join(x.split()))
 
 class MetroProductItemLoader(ProductItemLoader):
-    tags_in = None
     tags_out = Identity()
