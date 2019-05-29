@@ -16,7 +16,7 @@ NEWSPIDER_MODULE = 'price_monitor.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'price_monitor (+http://www.yourdomain.com)'
+#USER_AGENT = 'price_monitor/VERSION (+http://www.yourdomain.com)'
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15'
 
 # Obey robots.txt rules
@@ -89,3 +89,10 @@ AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# MongoDB
+MONGODB_SERVER = 'localhost'
+MONGODB_PORT = 27017
+MONGODB_DB = 'item_lookup'
+MONGODB_COLLECTION_PRODUCTS = 'products'
+MONGODB_COLLECTION_PRICES = 'prices'

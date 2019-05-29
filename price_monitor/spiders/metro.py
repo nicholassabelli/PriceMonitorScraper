@@ -30,7 +30,7 @@ class Metro:
     def __get_price(self, response):
         priceLoader = PriceItemLoader(response=response)
         priceLoader.add_css(Price.KEY_AMOUNT, ['#content-temp > div.grid--container.pt-20 > div.product-info.item-addToCart > div.pi--middle-col > div.pi--prices > div:nth-child(1) > div.pi--prices--first-line::attr(data-main-price)'])
-        priceLoader.add_value(Price.KEY_CURRENCY, [Currency.CAD])
+        priceLoader.add_value(Price.KEY_CURRENCY, [Currency.CAD.value])
         return dict(priceLoader.load_item())
 
 class MetroSitemapSpider(SitemapSpider):

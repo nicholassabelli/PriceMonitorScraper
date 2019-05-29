@@ -19,10 +19,12 @@ class Price(Item):
     # Array indexes.
     KEY_AMOUNT = 'amount'
     KEY_CURRENCY = 'currency'
+    KEY_DATETIME = 'datetime'
 
     # Fields.
     amount = Field()
     currency = Field()
+    datetime = Field()
 
 class Product(Item):
     # Array indexes.
@@ -31,7 +33,7 @@ class Product(Item):
     KEY_CURRENT_PRICE = 'current_price'
     KEY_URL = 'url'
     KEY_RELEASE_DATE = 'release_date'
-    KEY_AVAILABILITY = 'availability' # Enum?
+    KEY_AVAILABILITY = 'availability'
     KEY_UPC = 'upc'
     KEY_TAGS = 'tags'
     KEY_BRAND = 'brand'
@@ -40,6 +42,11 @@ class Product(Item):
     KEY_HEIGHT = 'height'
     KEY_WEIGHT_OR_VOLUME = 'weight_or_volume'
     KEY_SIZE = 'size'
+    KEY_STORE = 'store'
+    KEY_SOLD_BY = 'sold_by'
+    KEY_DOMAIN = 'domain'
+    KEY_CREATED = 'created'
+    KEY_UPDATED = 'updated'
 
     # Fields.
     name = Field()
@@ -56,10 +63,13 @@ class Product(Item):
     height = Field()
     weight_or_volume = Field()
     # size = Field()
-    # store and sold by are different 
     # images
     colour = Field()
     sold_by = Field()
+    store = Field()
+    domain = Field()
+    created = Field()
+    updated = Field()
 
 class Food(Product):
     pass
@@ -93,6 +103,7 @@ class ProductItemLoader(ItemLoader):
 
 class IGAProductItemLoader(ProductItemLoader):
     default_input_processor = MapCompose(remove_tags, replace_escape_chars, lambda x: ' '.join(x.split()))
+    # current_tags_out = Identity()
 
 class MetroProductItemLoader(ProductItemLoader):
     tags_out = Identity()
