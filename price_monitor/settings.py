@@ -14,7 +14,6 @@ BOT_NAME = 'price_monitor'
 SPIDER_MODULES = ['price_monitor.spiders']
 NEWSPIDER_MODULE = 'price_monitor.spiders'
 
-
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'price_monitor/VERSION (+http://www.yourdomain.com)'
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15'

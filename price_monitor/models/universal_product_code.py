@@ -1,22 +1,4 @@
 # -*- coding: utf-8 -*-
-from enum import Enum
-
-# Enum?
-class Availability(Enum):
-    # IN_STOCK     = 'In Stock'
-    # OUT_OF_STOCK = 'Out of Stock'
-    OUT_OF_STOCK = 0
-    IN_STOCK = 1
-    UNKNOWN = 2
-
-class Currency(Enum):
-    CAD = 'CAD'
-    USD = 'USD'
-
-class Language(Enum):
-    EN = 'en'
-    ES = 'es'
-    FR = 'fr'
 
 class UniversalProductCode:
     LENGTH_OF_UPC = 12

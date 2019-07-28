@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import scrapy
 import logging
+from scrapy.spiders import SitemapSpider
 
-class CantireSpider(scrapy.spiders.SitemapSpider):
+class CantireSpider(SitemapSpider):
     name = 'cantire'
     allowed_domains = ['canadiantire.ca']
     sitemap_urls = ['http://canadiantire.ca/robots.txt']
