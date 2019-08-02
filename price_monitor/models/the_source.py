@@ -22,7 +22,7 @@ class TheSource:
         return productLoader.load_item()
 
     def __get_price(self, response):
-        priceLoader = OfferItemLoader(response=response)
-        priceLoader.add_css('amount', ['#addToCartForm > input[name="price"]::attr(value)'])
-        priceLoader.add_css('currency', ['section.pdp-section > meta[itemprop="priceCurrency"]::attr(content)'])
-        return dict(priceLoader.load_item())
+        offerLoader = OfferItemLoader(response=response)
+        offerLoader.add_css('amount', ['#addToCartForm > input[name="price"]::attr(value)'])
+        offerLoader.add_css('currency', ['section.pdp-section > meta[itemprop="priceCurrency"]::attr(content)'])
+        return dict(offerLoader.load_item())

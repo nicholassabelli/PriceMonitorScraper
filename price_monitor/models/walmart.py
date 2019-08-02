@@ -71,17 +71,17 @@ class Walmart:
         return productLoader.load_item()
 
     def __get_price(self, response, offers):
-        priceLoader = OfferItemLoader(response=response)
+        offerLoader = OfferItemLoader(response=response)
 
         if offers and offers.get('price'):
-            priceLoader.add_value(Offer.KEY_AMOUNT, str(offers.get('price')))
+            offerLoader.add_value(Offer.KEY_AMOUNT, str(offers.get('price')))
         else:
-            priceLoader.add_css(Offer.KEY_AMOUNT, ['span[itemprop=price]', 'div.css-k008qs.e1ufqjyx0 > span.css-rykmet.esdkp3p2 > span.css-2vqe5n.esdkp3p0', 'body > div.js-content > div:nth-child(1) > div > div > div.css-0.eewy8oa0 > div.css-1i2cfe3.eewy8oa2 > div.css-18f77yw.eewy8oa4 > div > div.css-0.e1cd9jig0 > div > div.css-mzzkn5.e1yn5b3f5 > div > div > div.css-k008qs.e1ufqjyx0 > span.css-rykmet.esdkp3p2 > span'])
+            offerLoader.add_css(Offer.KEY_AMOUNT, ['span[itemprop=price]', 'div.css-k008qs.e1ufqjyx0 > span.css-rykmet.esdkp3p2 > span.css-2vqe5n.esdkp3p0', 'body > div.js-content > div:nth-child(1) > div > div > div.css-0.eewy8oa0 > div.css-1i2cfe3.eewy8oa2 > div.css-18f77yw.eewy8oa4 > div > div.css-0.e1cd9jig0 > div > div.css-mzzkn5.e1yn5b3f5 > div > div > div.css-k008qs.e1ufqjyx0 > span.css-rykmet.esdkp3p2 > span'])
 
         if offers and offers.get('priceCurrency'):
-            priceLoader.add_value(Offer.KEY_CURRENCY, offers.get('priceCurrency'))
+            offerLoader.add_value(Offer.KEY_CURRENCY, offers.get('priceCurrency'))
         else:
-            priceLoader.add_value(Offer.KEY_CURRENCY, [Currency.CAD.value])
+            offerLoader.add_value(Offer.KEY_CURRENCY, [Currency.CAD.value])
 
-        priceLoader.add_value(Offer.KEY_DATETIME, [datetime.datetime.utcnow().isoformat()])
-        return dict(priceLoader.load_item())
+        offerLoader.add_value(Offer.KEY_DATETIME, [datetime.datetime.utcnow().isoformat()])
+        return dict(offerLoader.load_item())

@@ -22,7 +22,7 @@ class Staples:
         return productLoader.load_item()
 
     def __get_price(self, response):
-        priceLoader = OfferItemLoader(response=response)
-        priceLoader.add_css('amount', ['#schemaorg-offer > div.price-module.clearfix > div.price-wrapper.price-extra-large > meta[itemprop="price"]::attr(content)'])
-        priceLoader.add_css('currency', ['#schemaorg-offer > div.price-module.clearfix > div.price-wrapper.price-extra-large > meta[itemprop="priceCurrency"]::attr(content)'])
-        return dict(priceLoader.load_item())
+        offerLoader = OfferItemLoader(response=response)
+        offerLoader.add_css('amount', ['#schemaorg-offer > div.price-module.clearfix > div.price-wrapper.price-extra-large > meta[itemprop="price"]::attr(content)'])
+        offerLoader.add_css('currency', ['#schemaorg-offer > div.price-module.clearfix > div.price-wrapper.price-extra-large > meta[itemprop="priceCurrency"]::attr(content)'])
+        return dict(offerLoader.load_item())

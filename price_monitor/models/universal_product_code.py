@@ -15,11 +15,17 @@ class UniversalProductCode:
     def value(self, upc: str):
         # Remove leading zeros first.
         # Then turn int into a list
-        upc = int(upc)
+        
+        # TODO: Helper, is_int().
+        try:
+            upc = int(upc)
+        except:
+            raise Exception(f'Could not cast "{upc}" to integer.')
+
         upc_list = list(map(int, str(upc)))
 
         if len(upc_list) > self.LENGTH_OF_UPC or len(upc_list) < self.LENGTH_OF_UPC - 2:
-            raise Exception('Blah')
+            raise Exception('Not a valid GTIN-12 (UPC). The value is either too short or too long.')
         
         if self.LENGTH_OF_UPC - 2 == len(upc_list):
             upc_list.insert(0, 0)
@@ -28,6 +34,8 @@ class UniversalProductCode:
             upc_list.append(self.__calculate_check_digit(upc_list)) # TODO: Can have check digit, might need a leading zero.
 
         self.__value = ''.join(list(map(str, upc_list)))
+
+        # TODO: Validate.
         
     def __calculate_check_digit(self, upc_list):
         result = 0

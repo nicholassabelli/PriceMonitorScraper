@@ -4,12 +4,12 @@ from scrapy import Item, Field
 
 class Product(Item):
     # Array indexes.
+    KEY_ID = '_id'
     KEY_NAME = 'name'
     KEY_DESCRIPTION = 'description'
-    KEY_CURRENT_PRICE = 'current_price'
+    KEY_CURRENT_PRICE = 'current_price' 
     KEY_URL = 'url'
     KEY_RELEASE_DATE = 'release_date'
-    KEY_AVAILABILITY = 'availability'
     KEY_UPC = 'upc'
     KEY_TAGS = 'tags'
     KEY_BRAND = 'brand'
@@ -18,19 +18,23 @@ class Product(Item):
     KEY_HEIGHT = 'height'
     KEY_WEIGHT_OR_VOLUME = 'weight_or_volume'
     KEY_SIZE = 'size'
-    KEY_STORE = 'store'
+    KEY_STORE = 'store' # sub document
     KEY_SOLD_BY = 'sold_by'
-    KEY_DOMAIN = 'domain'
     KEY_CREATED = 'created'
     KEY_UPDATED = 'updated'
+    KEY_SKU = 'sku'
+    KEY_MODEL_NUMBER = 'model_number'
+
+    KEY_STORE_ID = 'store_id'
+
+    # KEY_REGION = 'region'
 
     # Fields.
     name = Field()
     description = Field()
-    current_price = Field()
+    current_price = Field() # sub document
     url = Field()
     release_date = Field()
-    availability = Field()
     upc = Field()
     tags = Field()
     brand = Field()
@@ -42,12 +46,17 @@ class Product(Item):
     # images = Field()
     colour = Field()
     sold_by = Field()
-    store = Field()
-    domain = Field()
+    store = Field() # sub document
     created = Field()
     updated = Field()
+    sku = Field()
+    model_number = Field()
 
-    # manufacturer
+
+    # TODO: Fix.
+    product = Field()
+    store_id = Field()
+
     # sku
     # locale
     # region

@@ -2,23 +2,14 @@
 
 from enum import Enum
 
-# Enum?
 class Availability(Enum):
-    # IN_STOCK     = 'In Stock'
-    # OUT_OF_STOCK = 'Out of Stock'
-    OUT_OF_STOCK = 0
-    IN_STOCK = 1
-    UNKNOWN = 2
-
-    # Preorder
-    
-
-# Discontinued
-# InStock
-# InStoreOnly
-# LimitedAvailability
-# OnlineOnly
-# OutOfStock
-# PreOrder
-# PreSale
-# SoldOut
+    DISCONTINUED = 'Discontinued'
+    IN_STOCK = 'InStock'
+    IN_STORE_ONLY = 'InStoreOnly'
+    LIMITED_AVAILABILITY = 'LimitedAvailability'
+    # ONLINE_ONLY = 'OnlineOnly'
+    OUT_OF_STOCK = 'OutOfStock'
+    PREORDER = 'PreOrder'
+    PRESALE = 'PreSale'
+    SOLD_OUT = 'SoldOut'
+    UNKNOWN = 'Unknown'
