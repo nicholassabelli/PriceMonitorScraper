@@ -1,0 +1,120 @@
+{
+    "_id": ObjectId("o978regwkfre7o8d134"),
+
+    "gtin": "012345678910",
+    "model_number": "HCCPAPY2A",
+    "brand": "NINTENDO",
+
+    // "name": "Marvel Ultimate Alliance 3: The Black Order (Switch)",
+    // "description": "Heroes and villains unite in Marvel Ultimate Alliance 3: The Black Order for Nintendo Switch. Join forces with characters from across the Marvel universe including the Avengers, the Guardians of the Galaxy, the X-Men, and more, in order to find the Infinity Stones and stop Thanos and The Black Order from unleashing cosmic chaos.",
+    
+    "product_data": {
+        "lookup": {
+            "best_buy_canada (Best Buy Canada)": {
+                "version": 0.1,
+                "sku": "13367461",
+                "en": "2019-12-31",
+                "fr": "2019-12-31"
+            }
+        },
+        "values": [
+            {
+                "name": {
+                    "en": {
+                        "language": "en", 
+                        "value": "Marvel Ultimate Alliance 3: The Black Order (Switch)"
+                    },
+                    "fr": "Marvel Ultimate Alliance 3: The Black Order (Switch)"
+                },
+                "description": {
+                    "en": "Heroes and villains unite in Marvel Ultimate Alliance 3: The Black Order for Nintendo Switch. Join forces with characters from across the Marvel universe including the Avengers, the Guardians of the Galaxy, the X-Men, and more, in order to find the Infinity Stones and stop Thanos and The Black Order from unleashing cosmic chaos.",
+                    "fr": "Marvel Ultimate Alliance 3: The Black Order (Switch)"
+                },
+                "url": "https://www.bestbuy.ca/en-ca/product/marvel-ultimate-alliance-3-the-black-order-switch/13367461",
+                "sku": "13367461",
+
+                "brand": "NINTENDO",
+                "model_number": "HCCPAPY2A",
+                "release_date": "2019-07-19T00:00:00",
+
+                "seller": "Best Buy Canada",
+                "store_id": "best_buy_canada",
+
+                "additional_fields": [
+                    "category"
+                ],
+
+                "google_feed_extras": [
+                    "adult",
+                    "tax_us_only",
+                    "shipping"
+                ],
+
+                "created": "2019-12-31",
+                "updated": "2019-12-31",
+
+                "meta_data_score": 0.8
+            },
+            {...}
+        ]
+    },
+
+    "created": "2019-12-31",
+    "updated": "2019-12-31",
+
+    
+    
+    "additional_fields": {
+        "google_category": [],
+        "product_type": [],
+        "specs": [],
+        "apparel fields": [
+            "age_​​group",
+            "color",
+            "gender",
+            "material",
+            "pattern",
+            "size"
+        ]
+    },
+
+    "store_info": {
+        "_id": "best_buy_canada",
+        "store_name": "Best Buy",
+        "domain": "bestbuy.ca",
+        "region": "CA",
+        "created": "2019-12-31",
+        "updated": "2019-12-31"
+    },
+
+    "current_price": {
+        "_id": ObjectId("78yf4uwkhvb78w"),
+        "amount": 79.99,
+        "availability": "InStock",
+        "condition": "New",
+        "currency": "CAD",
+        "datetime": "2019-07-30T00: 17: 30.639441",
+        "product_id": "o978regwkfre7o8d134",
+        "sku": "13367461",
+        "sold_by": "Best Buy Canada Ltd.",
+        "store_id": "best_buy_canada",
+        "created": "2019-12-31",
+        "updated": "2019-12-31",
+        
+        "additional_fields": [
+            "specialOffers",
+            "warranties"
+        ]
+    },
+
+    "linked_products": {
+        "same": [
+            ObjectId("cbylsfdivukds"), 
+            ObjectId("o87rg34wkefuyvr")
+        ],
+        "similar": [
+            ObjectId("cbylsfdivukds"), 
+            ObjectId("o87rg34wkefuyvr")
+        ]
+    }
+}
