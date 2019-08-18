@@ -31,7 +31,7 @@ class IGA:
         # productLoader.add_value(Product.KEY_SOLD_BY, [self.sold_by])
         # productLoader.add_value(Product.KEY_DOMAIN, [self.domain])
         productLoader.add_css(Product.KEY_NAME, ['h1.product-detail__name'])
-        productLoader.add_value(Product.KEY_CURRENT_PRICE, [self.__get_price(response)])
+        productLoader.add_value(Product.KEY_CURRENT_OFFER, [self.__get_price(response)])
         productLoader.add_value(Product.KEY_URL, [response.url])
         productLoader.add_css(Product.KEY_BRAND, ['span.product-detail__brand'])
         # productLoader.add_xpath(Product.KEY_TAGS, ['//ul[contains(concat(" ", normalize-space(@class), " "), " breadcrumb ")]/li[last()-1]/a/@href'])

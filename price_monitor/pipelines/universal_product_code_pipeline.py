@@ -13,7 +13,7 @@ class UniversalProductCodePipeline(PriceMonitorPipeline):
                 upc = None
 
         item[Product.KEY_UPC] = upc
-        item[Product.KEY_CURRENT_PRICE][Offer.KEY_SKU] = upc
+        item[Product.KEY_CURRENT_OFFER][Offer.KEY_SKU] = upc
         item[Product.KEY_MODEL_NUMBER] = upc
         item[Product.KEY_SKU] = upc
 

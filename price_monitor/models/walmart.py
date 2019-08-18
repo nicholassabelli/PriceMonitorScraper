@@ -48,7 +48,7 @@ class Walmart:
         productLoader.add_value(Product.KEY_STORE, [self.store_name])
         productLoader.add_value(Product.KEY_DOMAIN, [self.domain])
         productLoader.add_value(Product.KEY_URL, [response.url])
-        productLoader.add_value(Product.KEY_CURRENT_PRICE, [self.__get_price(response, product_data)])
+        productLoader.add_value(Product.KEY_CURRENT_OFFER, [self.__get_price(response, product_data)])
 
         productLoader.add_css(Product.KEY_SOLD_BY, ['#product-desc p.seller-info span', 'div.css-9wd9vm.etlm3820 svg title', 'div.css-9wd9vm.etlm3820 a.css-1syn49.elkyjhv0'])
 

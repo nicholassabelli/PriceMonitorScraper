@@ -27,7 +27,7 @@ class Metro:
     def parse_product(self, response):
         productLoader = MetroProductItemLoader(response=response)
         productLoader.add_css(Product.KEY_NAME, ['h1.pi--title'])
-        productLoader.add_value(Product.KEY_CURRENT_PRICE, [self.__get_price(response)])
+        productLoader.add_value(Product.KEY_CURRENT_OFFER, [self.__get_price(response)])
         productLoader.add_value(Product.KEY_URL, [response.url])
         productLoader.add_css(Product.KEY_BRAND, ['div.pi--brand'])
         productLoader.add_css(Product.KEY_WEIGHT_OR_VOLUME, ['div.pi--weight'])

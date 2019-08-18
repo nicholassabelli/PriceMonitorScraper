@@ -30,7 +30,7 @@ class Offer(Item): # TODO: Rename to offer.
     store_id = Field()
     updated = Field()
 
-
+    # warranty
     # is_on_sale = Field()
     # region
     # saleEndDate

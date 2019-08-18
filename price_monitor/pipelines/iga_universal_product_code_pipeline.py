@@ -9,7 +9,7 @@ class IGAUniversalProductCodePipeline(UniversalProductCodePipeline):
         if item.get(Product.KEY_UPC):
             upc = UniversalProductCode(item[Product.KEY_UPC].split('_')[1]).value
             item[Product.KEY_UPC] = upc
-            item[Product.KEY_CURRENT_PRICE][Offer.KEY_SKU] = upc
+            item[Product.KEY_CURRENT_OFFER][Offer.KEY_SKU] = upc
             item[Product.KEY_MODEL_NUMBER] = upc
             item[Product.KEY_SKU] = upc
         
