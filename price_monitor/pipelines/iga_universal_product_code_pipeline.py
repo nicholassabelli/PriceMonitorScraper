@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
-from price_monitor.items import Offer, Product
-from price_monitor.models import UniversalProductCode
+from price_monitor.items.offer import Offer
+from price_monitor.items.product import Product
+from price_monitor.models.universal_product_code import UniversalProductCode
 from price_monitor.pipelines.universal_product_code_pipeline import UniversalProductCodePipeline
 
 class IGAUniversalProductCodePipeline(UniversalProductCodePipeline):

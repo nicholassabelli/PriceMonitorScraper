@@ -17,9 +17,3 @@ class StaplesSpider(Spider):
 
     def parse(self, response):
         return self.staples.parse_product(response)
-
-# 75x75
-# twobyone > div.at-total-container > div:nth-child(1) > img
-
-# 500x500
-# #pagecontent > div > div.prod-detail-wrapper.jmvc-controller-pdp.ng-scope.pdp_desktop.pdp_ui > div > div.prod-detail-bot > div > div.prod-detail-assets.span7 > div.core-utilities > div > div:nth-child(2) > div > div.gallery-image-container > div > div:nth-child(2) > img

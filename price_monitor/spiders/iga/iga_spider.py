@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
 from scrapy.spiders import Spider
-from price_monitor.models import IGA
+from price_monitor.models.iga import IGA
 
 class IGASpider(Spider):
     name = 'iga_spider'

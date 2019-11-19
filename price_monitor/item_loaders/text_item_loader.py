@@ -3,9 +3,9 @@
 from scrapy.loader import ItemLoader
 from scrapy.loader.processors import Identity, MapCompose, TakeFirst
 from w3lib.html import replace_entities, replace_escape_chars, remove_tags
-from price_monitor.items import store_item
+from price_monitor.items import text
 
-class StoreItemLoader(ItemLoader):
+class TextItemLoader(ItemLoader):
     default_input_processor = MapCompose(remove_tags, replace_escape_chars, replace_entities)
     default_output_processor = TakeFirst()
-    default_item_class = store_item.StoreItem
+    default_item_class = text.Text

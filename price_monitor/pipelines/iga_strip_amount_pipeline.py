@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
-from price_monitor.items import Offer, Product
-from price_monitor.models import Availability
+from price_monitor.items.offer import Offer
+from price_monitor.items.product import Product
+from price_monitor.models.availability import Availability
 from price_monitor.pipelines.strip_amount_pipeline import StripAmountPipeline
 
 class IGAStripAmountPipeline(StripAmountPipeline):

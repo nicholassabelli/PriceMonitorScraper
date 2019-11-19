@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from scrapy.spiders import SitemapSpider
 from price_monitor.models.best_besy import BestBuy
 

@@ -2,7 +2,7 @@
 
 from scrapy.http import Request
 from scrapy.spiders import SitemapSpider
-from price_monitor.models import Walmart
+from price_monitor.models.walmart import Walmart
 
 class WalmartSitemapSpider(SitemapSpider):
     name = 'walmart_sitemap_spider'

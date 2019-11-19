@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from scrapy.spiders import Spider
-from price_monitor.models import Metro
+from price_monitor.models.metro import Metro
 
 class MetroSpider(Spider):
     name = 'metro_spider'

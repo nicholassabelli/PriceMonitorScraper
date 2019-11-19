@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
 from urllib.parse import unquote
-from price_monitor.items import Product
+from price_monitor.items.product import Product
 from price_monitor.pipelines.tags_pipeline import TagsPipeline
 
 class BreadcrumbTagsPipeline(TagsPipeline):

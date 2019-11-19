@@ -5,12 +5,12 @@ from price_monitor.items import (
     product
 )
 from price_monitor.pipelines import (
-    price_monitor_pipeline
+    strip_amount_pipeline
 )
 
-class StripAmountPipeline(price_monitor_pipeline.PriceMonitorPipeline):
+class TheBrickStripAmountPipeline(strip_amount_pipeline.StripAmountPipeline):
     def process_item(self, item, spider):
         if item.get(product.Product.KEY_CURRENT_OFFER) and item.get(product.Product.KEY_CURRENT_OFFER).get(offer.Offer.KEY_AMOUNT):
-            item[product.Product.KEY_CURRENT_OFFER][offer.Offer.KEY_AMOUNT] = float(item[product.Product.KEY_CURRENT_OFFER][offer.Offer.KEY_AMOUNT].strip('$'))
+            item[product.Product.KEY_CURRENT_OFFER][offer.Offer.KEY_AMOUNT] = float(item[product.Product.KEY_CURRENT_OFFER][offer.Offer.KEY_AMOUNT].strip('$')) / 100
         
         return item

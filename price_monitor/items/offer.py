@@ -12,7 +12,7 @@ class Offer(Item): # TODO: Rename to offer.
     KEY_DATETIME = 'datetime'  
     KEY_ID = '_id'  
     KEY_PRODUCT_ID = 'product_id'
-    KEY_SKU = 'sku'
+    KEY_SKU = 'sku' # TODO: SKU is bad for offer, store could reuse for all items in a case.
     KEY_SOLD_BY = 'sold_by'
     KEY_STORE_ID = 'store_id'
     KEY_UPDATED = 'updated'

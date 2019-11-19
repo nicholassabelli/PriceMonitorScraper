@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
 from scrapy.spiders import SitemapSpider
-from price_monitor.models import IGA
+from price_monitor.models.iga import IGA
 
 class IGASitemapSpider(SitemapSpider):
     name = 'iga_sitemap_spider'

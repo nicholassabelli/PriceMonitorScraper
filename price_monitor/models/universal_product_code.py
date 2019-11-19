@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 class UniversalProductCode:
     LENGTH_OF_UPC = 12
 
@@ -18,7 +16,7 @@ class UniversalProductCode:
         
         # TODO: Helper, is_int().
         try:
-            upc = int(upc)
+            upc = int(float(upc))
         except:
             raise Exception(f'Could not cast "{upc}" to integer.')
 

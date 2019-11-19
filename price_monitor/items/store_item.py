@@ -2,7 +2,7 @@
 
 from scrapy import Item, Field
 
-class Store(Item): # TODO: Rename to offer.
+class StoreItem(Item):
     # Array indexes.
     KEY_ID = '_id'
     KEY_CREATED = 'created'

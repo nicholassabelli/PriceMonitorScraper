@@ -1,6 +1,7 @@
-# -*- coding: utf-8 -*-
-
-from price_monitor.item_loaders import OfferItemLoader, ProductItemLoader
+from price_monitor.item_loaders import (
+    offer_item_loader,
+    product_item_loader
+)
 
 class Staples:
     allowed_domains = ['staples.ca']
@@ -11,7 +12,7 @@ class Staples:
     }
 
     def parse_product(self, response):
-        productLoader = ProductItemLoader(response=response)
+        productLoader = product_item_loader.ProductItemLoader(response=response)
         productLoader.add_css('name', ['head > meta[property="og:title"]::attr(content)'])
         productLoader.add_css('description', ['head > meta[name="description"]::attr(content)'])
         productLoader.add_css('releaseDate', ['#ctl00_CP_ctl00_PD_lblReleaseDate'])
@@ -22,7 +23,7 @@ class Staples:
         return productLoader.load_item()
 
     def __get_price(self, response):
-        offerLoader = OfferItemLoader(response=response)
+        offerLoader = offer_item_loader.OfferItemLoader(response=response)
         offerLoader.add_css('amount', ['#schemaorg-offer > div.price-module.clearfix > div.price-wrapper.price-extra-large > meta[itemprop="price"]::attr(content)'])
         offerLoader.add_css('currency', ['#schemaorg-offer > div.price-module.clearfix > div.price-wrapper.price-extra-large > meta[itemprop="priceCurrency"]::attr(content)'])
         return dict(offerLoader.load_item())
