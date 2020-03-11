@@ -149,12 +149,16 @@ class TheBrick(store.Store): # Is shopify.
             data['variants'][0]['sku']
         )
         product_data_value_loader.add_value(
-            offer.Offer.KEY_SOLD_BY,
+            product_data.ProductData.KEY_SOLD_BY,
             self.sold_by
         )
         product_data_value_loader.add_value(
-            offer.Offer.KEY_STORE_ID, 
-            [self.store_id]
+            product_data.ProductData.KEY_STORE_ID, 
+            self.store_id
+        )
+        product_data_value_loader.add_value(
+            field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
+            value={language.Language.EN.value: {}} # TODO: Fix.
         )
         product_data_value_loader.add_value(
             product_data.ProductData.KEY_URL,
@@ -171,7 +175,7 @@ class TheBrick(store.Store): # Is shopify.
             condition=condition.Condition.NEW.value, 
             currency=curreny.Currency.CAD.value, 
             datetime=datetime.datetime.utcnow().isoformat(), 
-            sku=data['tags']['vsn'], 
+            # sku=data['tags']['vsn'], 
             sold_by=self.sold_by, 
             store_id=self.store_id
         )

@@ -33,7 +33,7 @@ class Leons(store.Store): # Is shopify.
         'ITEM_PIPELINES': {
             'price_monitor.pipelines.the_brick_strip_amount_pipeline.TheBrickStripAmountPipeline': 300,
             # 'price_monitor.pipelines.TagsPipeline': 300,
-            # 'price_monitor.pipelines.MongoDBPipeline': 1000
+            'price_monitor.pipelines.mongo_db_pipeline.MongoDBPipeline': 1000
         }
     }
 
@@ -89,12 +89,16 @@ class Leons(store.Store): # Is shopify.
             self.__get_offer_with_dictionary(response, data)
         )
         product_loader.add_value(
-            product.Product.KEY_STORE, 
-            self.__get_store_with_dictionary(response)
+            product.Product.KEY_MODEL_NUMBER, 
+            data['tags']['vsn']
         )
         product_loader.add_value(
             product.Product.KEY_PRODUCT_DATA, 
             self.__get_product_data(response, data, upc)
+        )
+        product_loader.add_value(
+            product.Product.KEY_STORE, 
+            self.__get_store_with_dictionary(response)
         )
         
         return product_loader.load_item()
@@ -147,12 +151,16 @@ class Leons(store.Store): # Is shopify.
             data['tags']['vsn']
         )
         product_data_value_loader.add_value(
-            offer.Offer.KEY_SOLD_BY,
+            product_data.ProductData.KEY_SOLD_BY,
             self.sold_by
         )
         product_data_value_loader.add_value(
-            offer.Offer.KEY_STORE_ID, 
+            product_data.ProductData.KEY_STORE_ID, 
             [self.store_id]
+        )
+        product_data_value_loader.add_value(
+            field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
+            value={language.Language.EN.value: {}} # TODO: Fix.
         )
 
         return (product_data_value_loader.load_item()).get_dictionary()
@@ -165,7 +173,7 @@ class Leons(store.Store): # Is shopify.
             condition=condition.Condition.NEW.value, 
             currency=curreny.Currency.CAD.value, 
             datetime=datetime.datetime.utcnow().isoformat(), 
-            sku=data['tags']['vsn'], 
+            # sku=data['tags']['vsn'], 
             sold_by=self.sold_by, 
             store_id=self.store_id
         )

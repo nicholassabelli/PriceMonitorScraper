@@ -34,7 +34,7 @@ class BestBuy(store.Store):
     custom_settings = {
         'ITEM_PIPELINES': {
             'price_monitor.pipelines.strip_amount_pipeline.StripAmountPipeline': 300,
-            # 'price_monitor.pipelines.MongoDBPipeline': 1000
+            'price_monitor.pipelines.mongo_db_pipeline.MongoDBPipeline': 1000
         }
     }
 
@@ -206,6 +206,10 @@ class BestBuy(store.Store):
             offer.Offer.KEY_STORE_ID,
             self.store_id
         )
+        product_data_value_loader.add_value(
+            field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
+            value={language.Language.EN.value: {}} # TODO: Fixed.
+        )
 
         if upc:
             product_data_value_loader.add_value(
@@ -257,7 +261,7 @@ class BestBuy(store.Store):
             condition=condition.Condition.NEW.value, 
             currency=curreny.Currency.CAD.value, 
             datetime=datetime.datetime.utcnow().isoformat(), 
-            sku=productDetails['sku'], 
+            # sku=productDetails['sku'], 
             sold_by=self.sold_by, 
             store_id=self.store_id
         )

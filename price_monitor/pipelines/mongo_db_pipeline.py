@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-import logging, pymongo
+import logging, pymongo, re
 from datetime import datetime
 from scrapy.conf import settings
 from price_monitor.items import (
     offer,
     product,
     product_data,
-    store_item
+    store_item,
 )
 from price_monitor.models import (
-    language
+    language,
 )
 
 class MongoDBPipeline(object):
     def __init__(self):
         connection = pymongo.MongoClient(
             settings['MONGODB_SERVER'],
-            settings['MONGODB_PORT']
+            settings['MONGODB_PORT'],
         )
         db = connection[settings['MONGODB_DB']]
         self.products_collection = db[settings['MONGODB_COLLECTION_PRODUCTS']]
@@ -27,58 +27,39 @@ class MongoDBPipeline(object):
     def process_item(self, item, spider):
         product_dictionary = dict(item)
     
-        # Extract sub dictionaries to new collection.
+        # Extract sub dictionaries to new collections.
         offer_dictionary = product_dictionary.pop(
             product.Product.KEY_CURRENT_OFFER, 
-            None
+            None,
         )
         store_dictionary = product_dictionary.pop(
             product.Product.KEY_STORE, 
-            None
+            None,
         )
         product_data_dictionary = product_dictionary.pop(
             product.Product.KEY_PRODUCT_DATA, 
-            None
+            None,
         )
 
         # TODO: Handle errors.
-        product_data_store_index = list(product_data_dictionary.keys())[0]
+        store_seller_key = list(product_data_dictionary.keys())[0]
+        lang = language.Language.EN.value
 
         # Add/fix datetime fields.
         self.__add_or_fix_datetime_field(
             offer_dictionary=offer_dictionary,
             product_data_store_dictionary=product_data_dictionary[
-                product_data_store_index
+                store_seller_key
             ],
             product_dictionary=product_dictionary,
             store_dictionary=store_dictionary,
             supported_languages_dictionary=product_data_dictionary \
-                [product_data_store_index] \
+                [store_seller_key] \
                 [product_data.ProductData.KEY_SUPPORTED_LANGUAGES],
+            lang=lang,
         )
 
         self.__upsert_store(store_dictionary)
-        # self.stores_collection.update(
-        #     {
-        #         store_item.StoreItem.KEY_ID: store_dictionary[
-        #             store_item.StoreItem.KEY_ID
-        #         ]
-        #     },
-        #     {
-        #         store_dictionary
-        #     },
-        #     {
-        #         'upsert': True
-        #     }
-        # )
-
-        # if not self.stores_collection.find_one({
-        #     store_item.StoreItem.KEY_ID: store_dictionary[
-        #         store_item.StoreItem.KEY_ID
-        #     ]
-        # }):
-        #     store_id = self.stores_collection.insert(store_dictionary)
-        #     logging.log(logging.INFO, "Added store to database!")
 
         insertProduct = False       
         product_by_store_and_number = None
@@ -87,10 +68,14 @@ class MongoDBPipeline(object):
 
         if not product_by_gtin:
             product_by_store_and_number = \
-                self.__find_product_by_store_and_number(
-                    product_data_store_index=product_data_store_index,
-                    product_data_dictionary=product_data_dictionary,
-                    store_dictionary=store_dictionary
+                self.__find_product_by_model_number_and_brand(
+                    # store_seller_key=store_seller_key,
+                    model_number=product_dictionary[
+                        product.Product.KEY_MODEL_NUMBER
+                    ],
+                    brand=product_dictionary[
+                        product.Product.KEY_BRAND
+                    ],
                 )
 
             if not product_by_store_and_number:
@@ -107,30 +92,29 @@ class MongoDBPipeline(object):
             product1 = product_by_gtin or product_by_store_and_number
             product_id = product1[product.Product.KEY_ID]
 
-            # TODO: upsert, setOnInsert.
-            # Check if store data is set.
-            # self.__upsert_product_data(
-            #     product1,
-            #     product_data_store_index,
-            #     product_data_dictionary
-            # )
-
             if not self.__is_product_data_set(
                 subject=product1[product.Product.KEY_PRODUCT_DATA], 
-                index=product_data_store_index,
+                index=store_seller_key,
             ):
                 logging.info('Store data is set.')
-                self.products_collection.update(
-                    {
-                        product.Product.KEY_ID: \
-                            product1[product.Product.KEY_ID],
+
+                product_data_store_seller_index = \
+                    self.__get_product_data_store_seller_index(
+                        store_seller_key=store_seller_key,
+                    )
+
+                self.products_collection.update_one(
+                    filter={
+                        product.Product.KEY_ID: product1[
+                            product.Product.KEY_ID
+                        ],
                     }, 
-                    {
-                        '$push': {
-                            product.Product.KEY_PRODUCT_DATA: \
-                                product_data_dictionary,
-                        }
-                    }
+                    update={
+                        '$set': {
+                            product_data_store_seller_index: \
+                                product_data_dictionary[store_seller_key],
+                        },
+                    },
                 )
 
         #         logging.log(logging.INFO, "Updated product's product data in database!")
@@ -156,7 +140,7 @@ class MongoDBPipeline(object):
 
         # TODO: Add new language to fields.
         # TODO: Add supported languages.
-        
+
 
         offer_dictionary[offer.Offer.KEY_PRODUCT_ID] = product_id
         offer_dictionary[offer.Offer.KEY_DATETIME] = datetime.fromisoformat(
@@ -169,13 +153,7 @@ class MongoDBPipeline(object):
         return item
 
     def __is_product_data_set(self, subject, index): # TODO: No lookup required.
-        return True if (subject.get(index)) else False
-        # return self.products_collection.find_one({
-        #     product.Product.KEY_PRODUCT_DATA \
-        #     + '.' + product_data_store_index: { 
-        #         '$exists': True 
-        #     }
-        # })
+        return True if subject.get(index) else False
 
     def __is_language_set(self, subject, store_id, sold_by, language):
         # if lookup.get(f"{store_id} ({sold_by})") and lookup.get(ProductData.KEY_STORE_ID).get(f"{store_id} ({sold_by})").get(language):
@@ -183,21 +161,23 @@ class MongoDBPipeline(object):
 
         return False
 
-    def __get_model_number_index(self, product_data_store_index):
-        return product.Product.KEY_PRODUCT_DATA \
-                    + '.' + product_data_store_index \
-                    + '.' + product_data.ProductData.KEY_MODEL_NUMBER
+    # def __get_model_number_index(self, store_seller_key):
+    #     return product.Product.KEY_PRODUCT_DATA \
+    #                 + '.' + store_seller_key \
+    #                 + '.' + product_data.ProductData.KEY_MODEL_NUMBER
 
-    def __get_sku_index(self, product_data_store_index):
-        return product.Product.KEY_PRODUCT_DATA \
-                    + '.' + product_data_store_index \
-                    + '.' + product_data.ProductData.KEY_SKU 
+    # def __get_sku_index(self, store_seller_key):
+    #     return product.Product.KEY_PRODUCT_DATA \
+    #                 + '.' + store_seller_key \
+    #                 + '.' + product_data.ProductData.KEY_SKU 
 
-    def __get_store_id_index(self, product_data_store_index):
+    def __get_product_data_store_seller_index(
+        self, 
+        store_seller_key
+    ):
         return product.Product.KEY_PRODUCT_DATA \
-                    + '.' + product_data_store_index \
-                    + '.' + product_data.ProductData.KEY_STORE_ID 
-    
+                    + '.' + store_seller_key
+
     def __find_product_by_gtin(self, product_dictionary):
         return self.products_collection.find_one({
             product.Product.KEY_GTIN: product_dictionary[
@@ -205,39 +185,29 @@ class MongoDBPipeline(object):
             ]
         })
     
-    def __find_product_by_store_and_number(
+    def __find_product_by_model_number_and_brand(
         self, 
-        product_data_store_index,
-        product_data_dictionary, 
-        store_dictionary
+        # store_seller_key,
+        model_number, 
+        brand,
     ):
-        model_number_index = self.__get_model_number_index(
-            product_data_store_index
-        )
-        sku_index = self.__get_sku_index(product_data_store_index)
-        store_id_index = self.__get_store_id_index(product_data_store_index)
+        # product_data_store_seller_index = \
+        #     self.__get_product_data_store_seller_index(
+        #     store_seller_key
+        # )
+        brand_regex = re.compile(f'^{brand}$', re.IGNORECASE)
         
         return self.products_collection.find_one(
             {
                 '$and': [
+                    # {
+                    #     product_data_store_seller_index: { '$exists': True }
+                    # },
                     {
-                        store_id_index: store_dictionary[
-                            store_item.StoreItem.KEY_ID
-                        ]
+                        product.Product.KEY_MODEL_NUMBER: model_number
                     },
                     {
-                        '$or': [
-                            {
-                                model_number_index: product_data_dictionary \
-                                    [product_data_store_index] \
-                                    [product_data.ProductData.KEY_MODEL_NUMBER]
-                            },
-                            {
-                                sku_index: product_data_dictionary \
-                                    [product_data_store_index] \
-                                    [product_data.ProductData.KEY_SKU]
-                            },
-                        ]
+                        product.Product.KEY_BRAND: brand_regex
                     }
                 ]
             }
@@ -249,7 +219,8 @@ class MongoDBPipeline(object):
         product_data_store_dictionary,
         product_dictionary,
         store_dictionary,
-        supported_languages_dictionary
+        supported_languages_dictionary,
+        lang
     ):
         dictionaries = [
             offer_dictionary,
@@ -260,13 +231,13 @@ class MongoDBPipeline(object):
 
         # TODO: Add index to item to avoid this loop.
         # Add the supported lang dict to the array of dicts to fix.
-        for lang in language.Language:
-            x = supported_languages_dictionary.get(lang.value)
+        # for lang in language.Language:
+        x = supported_languages_dictionary.get(lang)
 
-            if x is not None:
-                dictionaries.append(supported_languages_dictionary[
-                    lang.value
-                ])
+        if x is not None:
+            dictionaries.append(supported_languages_dictionary[
+                lang.value
+            ])
 
         now = datetime.utcnow()
         datetime_indexes = [
@@ -288,46 +259,8 @@ class MongoDBPipeline(object):
                 ]
             },
             update={
-                '$setOnInsert': store_dictionary
+                '$setOnInsert': store_dictionary,
             },
-            upsert=True
+            upsert=True,
         )
         # logging.log(logging.INFO, "Added store to database!")
-
-    # def __upsert_product_data(
-    #     self, 
-    #     product_item,
-    #     product_data_store_index,
-    #     product_data_dictionary
-    # ):
-    #     # nUpserted
-    #     # writeConcernError
-    #     return self.products_collection.update_one(
-    #         filter={
-    #             product.Product.KEY_ID: product_item[product.Product.KEY_ID],
-    #             product.Product.KEY_PRODUCT_DATA: product_data_store_index
-    #         },
-    #         update={
-    #             '$set': product_data_dictionary
-    #         },
-    #         upsert=True
-    #     )
-
-    #     # if not self.__is_product_data_set(
-    #     #         product,
-    #     #         product_data_dictionary,
-    #     #         # subject=product1[product.Product.KEY_PRODUCT_DATA], 
-    #     #         # index=product_data_store_index,
-    #     #     ):
-    #             # logging.info('Store data is set.')
-    #             # self.products_collection.update(
-    #             #     {
-                        
-    #             #     }, 
-    #             #     {
-    #             #         '$push': {
-    #             #             product.Product.KEY_PRODUCT_DATA: \
-    #             #                 product_data_dictionary,
-    #             #         }
-    #             #     }
-    #             # )
