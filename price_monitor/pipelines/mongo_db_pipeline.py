@@ -2,7 +2,7 @@
 
 import logging, pymongo, re
 from datetime import datetime
-from scrapy.conf import settings
+from scrapy.utils.project import get_project_settings
 from price_monitor.items import (
     offer,
     product,
@@ -15,14 +15,15 @@ from price_monitor.models import (
 
 class MongoDBPipeline(object):
     def __init__(self):
+        settings = get_project_settings()
         connection = pymongo.MongoClient(
-            settings['MONGODB_SERVER'],
-            settings['MONGODB_PORT'],
+            settings.get('MONGODB_SERVER'),
+            settings.get('MONGODB_PORT'),
         )
-        db = connection[settings['MONGODB_DB']]
-        self.products_collection = db[settings['MONGODB_COLLECTION_PRODUCTS']]
-        self.offers_collection = db[settings['MONGODB_COLLECTION_OFFERS']]
-        self.stores_collection = db[settings['MONGODB_COLLECTION_STORES']]
+        db = connection[settings.get('MONGODB_DB')]
+        self.products_collection = db[settings.get('MONGODB_COLLECTION_PRODUCTS')]
+        self.offers_collection = db[settings.get('MONGODB_COLLECTION_OFFERS')]
+        self.stores_collection = db[settings.get('MONGODB_COLLECTION_STORES')]
 
     def process_item(self, item, spider):
         product_dictionary = dict(item)
@@ -236,7 +237,7 @@ class MongoDBPipeline(object):
 
         if x is not None:
             dictionaries.append(supported_languages_dictionary[
-                lang.value
+                lang
             ])
 
         now = datetime.utcnow()
