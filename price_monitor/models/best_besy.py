@@ -63,7 +63,11 @@ class BestBuy(store.Store):
                 if text.endswith(';'):
                     text = text[:-1]
                 
-                return json.loads(text)
+                try:
+                    return json.loads(text)
+                except:
+                    pass
+                
         
         return None
 
@@ -99,7 +103,7 @@ class BestBuy(store.Store):
         if upc:
             product_loader.add_value(
                 product.Product.KEY_GTIN, 
-                super()._get_gtin_field(
+                super()._create_gtin_field(
                     response=response, 
                     type=global_trade_item_number \
                         .GlobalTradeItemNumber.UPCA.value,
@@ -113,16 +117,16 @@ class BestBuy(store.Store):
         )
         product_loader.add_value(
             product.Product.KEY_STORE,
-            self.__get_store_with_dictionary(response)
+            self.__create_store_dictionary(response)
         )
         product_loader.add_value(
             product.Product.KEY_PRODUCT_DATA, 
-            self.__get_product_data(response, data, upc)
+            self.__create_product_data_dictionary(response, data, upc)
         )
         
         return product_loader.load_item()
 
-    def __get_product_data(self, response, data, upc):
+    def __create_product_data_dictionary(self, response, data, upc):
         product_data_value_loader = \
             product_data_item_loader.ProductDataItemLoader(response=response)
 
@@ -214,7 +218,7 @@ class BestBuy(store.Store):
         if upc:
             product_data_value_loader.add_value(
                 product.Product.KEY_GTIN, 
-                super()._get_gtin_field(
+                super()._create_gtin_field(
                     response=response, 
                     type=global_trade_item_number \
                         .GlobalTradeItemNumber.UPCA.value,
@@ -224,7 +228,7 @@ class BestBuy(store.Store):
 
         return (product_data_value_loader.load_item()).get_dictionary()
 
-    def __get_availability_with_dictionary(self, product):
+    def __determine_availability(self, product):
         productDetails = product['product']
         is_preorderable = productDetails['isPreorderable']
         shipping_purchasable = \
@@ -254,10 +258,10 @@ class BestBuy(store.Store):
         product = data['product']
         productDetails = data['product']['product']
 
-        return super()._get_offer_with_dictionary(
+        return super()._create_offer_dictionary(
             response=response, 
             amount=productDetails['priceWithoutEhf'], 
-            availability=self.__get_availability_with_dictionary(product), 
+            availability=self.__determine_availability(product), 
             condition=condition.Condition.NEW.value, 
             currency=curreny.Currency.CAD.value, 
             datetime=datetime.datetime.utcnow().isoformat(), 
@@ -266,8 +270,8 @@ class BestBuy(store.Store):
             store_id=self.store_id
         )
 
-    def __get_store_with_dictionary(self, response):
-        return super()._get_store_with_dictionary(
+    def __create_store_dictionary(self, response):
+        return super()._create_store_dictionary(
             response=response, 
             domain=self.domain, 
             store_id=self.store_id, 

@@ -52,8 +52,8 @@ class ProductData(Item):
         value_dict = dict(self)
 
         return {
-            self.__get_product_data_store_index(value_dict[self.KEY_STORE_ID], value_dict[self.KEY_SOLD_BY]): value_dict
+            self.__create_product_data_dictionary_store_index(value_dict[self.KEY_STORE_ID], value_dict[self.KEY_SOLD_BY]): value_dict
         }
 
-    def __get_product_data_store_index(self, store_id, sold_by): #TODO: Put in a model.
+    def __create_product_data_dictionary_store_index(self, store_id, sold_by): #TODO: Put in a model.
         return f"{store_id} ({sold_by})".replace(".", "")

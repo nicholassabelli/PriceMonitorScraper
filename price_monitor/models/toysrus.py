@@ -85,7 +85,7 @@ class Toysrus(store.Store):
         if upc:
             product_loader.add_value(
                 product.Product.KEY_GTIN, 
-                super()._get_gtin_field(
+                super()._create_gtin_field(
                     response=response, 
                     type=global_trade_item_number \
                         .GlobalTradeItemNumber.UPCA.value,
@@ -99,23 +99,23 @@ class Toysrus(store.Store):
         )
         product_loader.add_value(
             product.Product.KEY_STORE,
-            self.__get_store_with_dictionary(response)
+            self.__create_store_dictionary(response)
         )
         product_loader.add_value(
             product.Product.KEY_PRODUCT_DATA, 
-            self.__get_product_data(response=response, data=data, upc=upc)
+            self.__create_product_data_dictionary(response=response, data=data, upc=upc)
         )
         
         return product_loader.load_item()
 
-    def __get_product_data(self, response, data, upc):
+    def __create_product_data_dictionary(self, response, data, upc):
         product_data_value_loader = \
             product_data_item_loader.ProductDataItemLoader(response=response)
 
         if upc:
             product_data_value_loader.add_value(
                 product.Product.KEY_GTIN, 
-                super()._get_gtin_field(
+                super()._create_gtin_field(
                     response=response, 
                     type=global_trade_item_number \
                         .GlobalTradeItemNumber.UPCA.value, 
@@ -129,7 +129,7 @@ class Toysrus(store.Store):
         )
         product_data_value_loader.add_value( # TODO: HTML entities being replaced with '', it needs spaces. Or we should keep it the same.
             product_data.ProductData.KEY_DESCRIPTION, 
-            super()._get_text_field(
+            super()._create_text_field(
                 response=response, 
                 value=data['longDescription'],  # replace_tags
                 language=language.Language.EN.value 
@@ -145,7 +145,7 @@ class Toysrus(store.Store):
         )
         product_data_value_loader.add_value(
             product_data.ProductData.KEY_NAME, 
-            super()._get_text_field(
+            super()._create_text_field(
                 response=response, 
                 value=data['productName'],
                 language=language.Language.EN.value
@@ -170,12 +170,12 @@ class Toysrus(store.Store):
 
         return (product_data_value_loader.load_item()).get_dictionary()
 
-    def _get_availability_with_dictionary(self, data):
+    def _determine_availability(self, data):
         return availability.Availability.IN_STOCK.value if data \
             else availability.Availability.OUT_OF_STOCK.value
 
     def __get_offer_with_dictionary(self, response, data):
-        return super()._get_offer_with_dictionary(
+        return super()._create_offer_dictionary(
             response=response, 
             amount=data['price']['sales']['value'], 
             availability=data['available'], 
@@ -187,8 +187,8 @@ class Toysrus(store.Store):
         )
         # sku=data['SKN'], 
 
-    def __get_store_with_dictionary(self, response):
-        return super()._get_store_with_dictionary(
+    def __create_store_dictionary(self, response):
+        return super()._create_store_dictionary(
             response=response, 
             domain=self.domain, 
             store_id=self.store_id, 

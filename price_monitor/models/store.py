@@ -24,14 +24,21 @@ from price_monitor.models import (
 )
 
 class Store:
-    def _get_offer_with_dictionary( # TODO: Rename.
+    store_id = None
+    store_name = None
+    sold_by = None
+    region = None
+    domain = None
+    allowed_domains = []
+    custom_settings = {}
+
+    def _create_offer_dictionary(
         self, 
         response: HtmlResponse,
         amount: str, 
         availability: str, 
         condition: str, 
         currency: str, 
-        datetime: str, 
         sold_by: str, 
         store_id: str
     ) -> Dict[str, str]:
@@ -40,19 +47,17 @@ class Store:
         offerLoader.add_value(offer.Offer.KEY_AMOUNT, str(amount))
         offerLoader.add_value(
             offer.Offer.KEY_AVAILABILITY, 
-            self._get_availability_with_dictionary(availability)
+            self._determine_availability(availability)
         )
         offerLoader.add_value(offer.Offer.KEY_CONDITION, condition)
         offerLoader.add_value(offer.Offer.KEY_CURRENCY, currency)
-        offerLoader.add_value(offer.Offer.KEY_DATETIME, datetime)
-        # offerLoader.add_value(offer.Offer.KEY_SKU, sku)
+        # offerLoader.add_value(offer.Offer.KEY_DATETIME, datetime)
         offerLoader.add_value(offer.Offer.KEY_SOLD_BY, sold_by)
         offerLoader.add_value(offer.Offer.KEY_STORE_ID, store_id)
 
         return dict(offerLoader.load_item())
-        # sku: str, 
 
-    def _get_store_with_dictionary(
+    def _create_store_dictionary( # TODO: Rename.
         self, 
         response: HtmlResponse,
         domain: str, 
@@ -65,12 +70,16 @@ class Store:
         storeLoader.add_value(store_item.StoreItem.KEY_ID, store_id)
         storeLoader.add_value(store_item.StoreItem.KEY_NAME, store_name)
         storeLoader.add_value(store_item.StoreItem.KEY_REGION, region)
+
         return dict(storeLoader.load_item())
 
-    def _get_availability_with_dictionary(self, data: dict):
-        return 
+    def _determine_language_from_url(self, url: str):
+        return ''
 
-    def _get_text_field(
+    def _determine_availability(self, data: dict):
+        pass 
+
+    def _create_text_field(
         self, 
         response: HtmlResponse, 
         value: str, 
@@ -79,20 +88,30 @@ class Store:
         textItemLoader = text_item_loader.TextItemLoader(response=response)
         textItemLoader.add_value(text.Text.KEY_LANGUAGE, language)
         textItemLoader.add_value(text.Text.KEY_VALUE, value)
+
         return {
             language: dict(textItemLoader.load_item())
         }
 
-    def _get_gtin_field(
+    def _create_gtin_field(
         self, 
         response: HtmlResponse, 
         type: str, 
         value: str
     ) -> Dict[str, str]:
-        gtinItemLoader = global_trade_item_number_loader.GlobalTradeItemNumberItemLoader(response=response)
-        gtinItemLoader.add_value(global_trade_item_number_item.GlobalTradeItemNumberItem.KEY_GTIN_TYPE, type)
-        gtinItemLoader.add_value(global_trade_item_number_item.GlobalTradeItemNumberItem.KEY_VALUE, value)
-        return dict(gtinItemLoader.load_item())
+        gtinItemLoader = \
+            global_trade_item_number_loader.GlobalTradeItemNumberItemLoader(
+                response=response
+            )
+        gtinItemLoader.add_value(
+            global_trade_item_number_item \
+                .GlobalTradeItemNumberItem \
+                .KEY_GTIN_TYPE, 
+            type
+        )
+        gtinItemLoader.add_value(
+            global_trade_item_number_item.GlobalTradeItemNumberItem.KEY_VALUE, 
+            value
+        )
 
-    def _determine_language_from_url(self, url: str):
-        pass
+        return dict(gtinItemLoader.load_item())

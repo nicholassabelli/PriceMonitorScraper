@@ -18,17 +18,11 @@ from price_monitor.models import (
     global_trade_item_number,
     language,
     region,
-    shopify,
+    store,
     universal_product_code
 )
 
-class Leons(shopify.Shopify): # Is shopify.
-    store_id = 'leons_canada' # TODO: Constants.
-    store_name = "Leon's"
-    sold_by = "Leon's Furniture Ltd."
-    region = region.Region.CANADA.value
-    domain = 'leons.ca'
-    allowed_domains = [domain] # TODO: French domain is different.
+class Shopify(store.Store): 
     custom_settings = {
         'ITEM_PIPELINES': {
             'price_monitor.pipelines.the_brick_strip_amount_pipeline.ShopifyStripAmountPipeline': 300,
@@ -41,7 +35,7 @@ class Leons(shopify.Shopify): # Is shopify.
         self.language = self._determine_language_from_url(response.url)
 
         if not self.language:
-            logging.error('Unable !')
+            logging.error('Unable to determine language!')
             return None
 
         data = self.__find_json_data(response)
@@ -50,14 +44,6 @@ class Leons(shopify.Shopify): # Is shopify.
             return self.__load_with_dictionary(response, data)
 
         logging.warning('No product data found!')
-        return None
-
-    def _determine_language_from_url(self, url: str):
-        if re.search(f'www.{self.domain}', url):
-            return language.Language.EN.value
-        elif re.search(f'fr.{self.domain}', url):
-            return language.Language.FR.value
-        
         return None
 
     def _determine_availability(self, data):
@@ -71,7 +57,7 @@ class Leons(shopify.Shopify): # Is shopify.
             try:
                 return json.loads(text)
             except:
-                # TODO: Log.
+                logging.error('Unable to load JSON data.')
                 pass
         
         return None
@@ -125,12 +111,10 @@ class Leons(shopify.Shopify): # Is shopify.
         product_data_value_loader = \
             product_data_item_loader.ProductDataItemLoader(response=response)
 
-        lang = language.Language.EN.value # TODO: Fix.
-
         if upc:
             product_data_value_loader.add_value(
-                product.Product.KEY_GTIN, 
-                super()._create_gtin_field(
+                field_name=product.Product.KEY_GTIN, 
+                value=super()._create_gtin_field(
                     response=response, 
                     type=global_trade_item_number \
                         .GlobalTradeItemNumber.UPCA.value, 
@@ -139,49 +123,49 @@ class Leons(shopify.Shopify): # Is shopify.
             )
 
         product_data_value_loader.add_value(
-            product_data.ProductData.KEY_URL, 
-            response.url
+            field_name=product_data.ProductData.KEY_URL, 
+            value=response.url
         )
         product_data_value_loader.add_value(
-            product_data.ProductData.KEY_NAME, 
-            super()._create_text_field(
+            field_name=product_data.ProductData.KEY_NAME, 
+            value=super()._create_text_field(
                 response=response, 
                 value=data['title'].split('|')[0], 
                 language=language.Language.EN.value)
         )
         product_data_value_loader.add_value(
-            product_data.ProductData.KEY_DESCRIPTION, 
-            super()._create_text_field(
+            field_name=product_data.ProductData.KEY_DESCRIPTION, 
+            value=super()._create_text_field(
                 response=response, 
                 value=data['description'], 
                 language=language.Language.EN.value)
         )
         product_data_value_loader.add_value(
-            product_data.ProductData.KEY_BRAND, 
-            data['vendor']
+            field_name=product_data.ProductData.KEY_BRAND, 
+            value=data['vendor']
         )
         product_data_value_loader.add_value(
-            product_data.ProductData.KEY_SKU, 
-            data['variants'][0]['sku']
+            field_name=product_data.ProductData.KEY_SKU, 
+            value=data['variants'][0]['sku']
         )
         product_data_value_loader.add_value(
-            product_data.ProductData.KEY_MODEL_NUMBER, 
-            data['tags']['vsn']
+            field_name=product_data.ProductData.KEY_MODEL_NUMBER, 
+            value=data['tags']['vsn']
         )
         product_data_value_loader.add_value(
-            product_data.ProductData.KEY_SOLD_BY,
-            self.sold_by
+            field_name=product_data.ProductData.KEY_SOLD_BY,
+            value=self.sold_by
         )
         product_data_value_loader.add_value(
-            product_data.ProductData.KEY_STORE_ID, 
-            [self.store_id]
+            field_name=product_data.ProductData.KEY_STORE_ID, 
+            value=self.store_id
         )
         product_data_value_loader.add_value(
             field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
-            value={language.Language.EN.value: {}} # TODO: Fix.
+            value={self.language: {}} # TODO: Fix.
         )
 
-        return (product_data_value_loader.load_item()).get_dictionary()
+        return dict(product_data_value_loader.load_item())
 
     def __create_offer_dictionary(self, response, data):
         return super()._create_offer_dictionary(
@@ -190,7 +174,6 @@ class Leons(shopify.Shopify): # Is shopify.
             availability=data['available'], 
             condition=condition.Condition.NEW.value, 
             currency=curreny.Currency.CAD.value, 
-            datetime=datetime.datetime.utcnow().isoformat(), 
             sold_by=self.sold_by, 
             store_id=self.store_id
         )

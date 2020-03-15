@@ -44,7 +44,7 @@ class MongoDBPipeline(object):
 
         # TODO: Handle errors.
         store_seller_key = list(product_data_dictionary.keys())[0]
-        lang = language.Language.EN.value
+        lang = language.Language.EN.value # TODO: Use lang from dict.
 
         # Add/fix datetime fields.
         self.__add_or_fix_datetime_field(
@@ -100,7 +100,7 @@ class MongoDBPipeline(object):
                 logging.info('Store data is set.')
 
                 product_data_store_seller_index = \
-                    self.__get_product_data_store_seller_index(
+                    self.__create_product_data_dictionary_store_seller_index(
                         store_seller_key=store_seller_key,
                     )
 
@@ -144,9 +144,9 @@ class MongoDBPipeline(object):
 
 
         offer_dictionary[offer.Offer.KEY_PRODUCT_ID] = product_id
-        offer_dictionary[offer.Offer.KEY_DATETIME] = datetime.fromisoformat(
-            offer_dictionary['datetime']
-        )
+        # offer_dictionary[offer.Offer.KEY_DATETIME] = datetime.fromisoformat(
+        #     offer_dictionary['datetime']
+        # )
 
         offer_id = self.offers_collection.insert(offer_dictionary)
         logging.log(logging.INFO, "Added offer to database!")
@@ -172,7 +172,7 @@ class MongoDBPipeline(object):
     #                 + '.' + store_seller_key \
     #                 + '.' + product_data.ProductData.KEY_SKU 
 
-    def __get_product_data_store_seller_index(
+    def __create_product_data_dictionary_store_seller_index(
         self, 
         store_seller_key
     ):
@@ -193,7 +193,7 @@ class MongoDBPipeline(object):
         brand,
     ):
         # product_data_store_seller_index = \
-        #     self.__get_product_data_store_seller_index(
+        #     self.__create_product_data_dictionary_store_seller_index(
         #     store_seller_key
         # )
         brand_regex = re.compile(f'^{brand}$', re.IGNORECASE)

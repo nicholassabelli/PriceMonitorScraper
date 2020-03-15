@@ -18,23 +18,24 @@ from price_monitor.models import (
     global_trade_item_number,
     language,
     region,
-    store,
+    shopify,
     universal_product_code
 )
 
-class TheBrick(store.Store): # Is shopify.
+class TheBrick(shopify.Shopify): # Is shopify.
     store_id = 'the_brick_canada' # TODO: Constants.
     store_name = 'The Brick'
     sold_by = 'The Brick Ltd.'
     region = region.Region.CANADA.value
     domain = 'thebrick.com'
+    domain_fr = 'brickenligne.com'
     allowed_domains = [
         domain,
-        'brickenligne.com'
+        domain_fr
     ]
     custom_settings = {
         'ITEM_PIPELINES': {
-            'price_monitor.pipelines.the_brick_strip_amount_pipeline.TheBrickStripAmountPipeline': 300,
+            'price_monitor.pipelines.the_brick_strip_amount_pipeline.ShopifyStripAmountPipeline': 300,
             'price_monitor.pipelines.mongo_db_pipeline.MongoDBPipeline': 1000
         }
     }
@@ -48,7 +49,15 @@ class TheBrick(store.Store): # Is shopify.
         logging.warning('No product data found!')
         return None
 
-    def _get_availability_with_dictionary(self, data):
+    def _determine_language_from_url(self, url: str):
+        if re.search(self.domain, url):
+            return language.Language.EN.value
+        elif re.search(self.domain_fr, url):
+            return language.Language.FR.value
+        
+        return None
+
+    def _determine_availability(self, data):
         return availability.Availability.IN_STOCK.value if data \
             else availability.Availability.OUT_OF_STOCK.value
 
@@ -56,7 +65,11 @@ class TheBrick(store.Store): # Is shopify.
         text = response.css('script[data-product-json]::text').get()   
 
         if text:
-            return json.loads(text)
+            try:
+                return json.loads(text)
+            except:
+                # TODO: Log.
+                pass
         
         return None
 
@@ -77,7 +90,7 @@ class TheBrick(store.Store): # Is shopify.
         if upc:
             product_loader.add_value(
                 product.Product.KEY_GTIN, 
-                super()._get_gtin_field(
+                super()._create_gtin_field(
                     response=response, 
                     type=global_trade_item_number \
                         .GlobalTradeItemNumber.UPCA.value, 
@@ -88,31 +101,34 @@ class TheBrick(store.Store): # Is shopify.
         product_loader.add_value(product.Product.KEY_BRAND, data['vendor'])
         product_loader.add_value(
             product.Product.KEY_CURRENT_OFFER, 
-            self.__get_offer_with_dictionary(response, data)
+            self.__create_offer_dictionary(response, data)
         )
-        product_loader.add_value(product.Product.KEY_MODEL_NUMBER, data['tags']['vsn'])
+        product_loader.add_value(
+            product.Product.KEY_MODEL_NUMBER, 
+            data['tags']['vsn']
+        )
         product_loader.add_value(
             product.Product.KEY_PRODUCT_DATA, 
-            self.__get_product_data(response, data, upc)
+            self.__create_product_data_dictionary(response, data, upc)
         )
         product_loader.add_value(
             product.Product.KEY_STORE, 
-            self.__get_store_with_dictionary(response)
+            self.__create_store_dictionary(response)
         )
         
         
         return product_loader.load_item()
 
-    def __get_product_data(self, response, data, upc):
+    def __create_product_data_dictionary(self, response, data, upc):
         product_data_value_loader = \
             product_data_item_loader.ProductDataItemLoader(response=response)
 
-        lang = language.Language.EN.value
+        lang = language.Language.EN.value # TODO: Fix.
 
         if upc:
             product_data_value_loader.add_value(
                 product.Product.KEY_GTIN, 
-                super()._get_gtin_field(
+                super()._create_gtin_field(
                     response=response, 
                     type=global_trade_item_number \
                         .GlobalTradeItemNumber.UPCA.value, 
@@ -126,7 +142,7 @@ class TheBrick(store.Store): # Is shopify.
         )
         product_data_value_loader.add_value(
             product_data.ProductData.KEY_DESCRIPTION, 
-            super()._get_text_field(
+            super()._create_text_field(
                 response=response, 
                 value=data['description'], 
                 language=language.Language.EN.value
@@ -138,7 +154,7 @@ class TheBrick(store.Store): # Is shopify.
         )
         product_data_value_loader.add_value(
             product_data.ProductData.KEY_NAME, 
-            super()._get_text_field(
+            super()._create_text_field(
                 response=response, 
                 value=data['title'].split('|')[0], 
                 language=language.Language.EN.value
@@ -167,23 +183,22 @@ class TheBrick(store.Store): # Is shopify.
 
         return (product_data_value_loader.load_item()).get_dictionary()
 
-    def __get_offer_with_dictionary(self, response, data):
-        return super()._get_offer_with_dictionary(
+    def __create_offer_dictionary(self, response, data):
+        return super()._create_offer_dictionary(
             response=response, 
             amount=data['price'], 
             availability=data['available'], 
             condition=condition.Condition.NEW.value, 
             currency=curreny.Currency.CAD.value, 
             datetime=datetime.datetime.utcnow().isoformat(), 
-            # sku=data['tags']['vsn'], 
             sold_by=self.sold_by, 
             store_id=self.store_id
         )
 
-    def __get_store_with_dictionary(self, response):
-        return super()._get_store_with_dictionary(
+    def __create_store_dictionary(self, response):
+        return super()._create_store_dictionary(
             response=response, 
-            domain=self.domain, 
+            domain=self.domain_en, 
             store_id=self.store_id, 
             store_name=self.store_name, 
             region=self.region
