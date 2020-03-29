@@ -100,7 +100,7 @@ class MongoDBPipeline(object):
                     )
 
             if not product1[product.Product.KEY_PRODUCT_DATA].get(store_seller_key):
-                logging.info('Store data is  not set.')
+                logging.info('Store data is not set.')
 
                 self.products_collection.update_one(
                     filter={

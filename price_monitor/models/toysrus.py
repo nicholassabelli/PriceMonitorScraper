@@ -37,7 +37,7 @@ class Toysrus(store.Store):
     }
 
     def parse_product(self, response):
-        data = self.__find_json_data(response)
+        data = self._find_json_data(response)
         
         if data:
             return self.__load_with_dictionary(response, data)
@@ -45,7 +45,7 @@ class Toysrus(store.Store):
         logging.warning('No product data found!')
         return None
 
-    def __find_json_data(self, response):
+    def _find_json_data(self, response):
         product_data = response \
             .css('div.b-product_details-stock_error p::attr(data-product)') \
             .extract()
@@ -181,7 +181,6 @@ class Toysrus(store.Store):
             availability=data['available'], 
             condition=condition.Condition.NEW.value, 
             currency=curreny.Currency.CAD.value, 
-            datetime=datetime.datetime.utcnow().isoformat(), 
             sold_by=self.sold_by, 
             store_id=self.store_id
         )

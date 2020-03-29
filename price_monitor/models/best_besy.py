@@ -39,7 +39,7 @@ class BestBuy(store.Store):
     }
 
     def parse_product(self, response):
-        data = self.__find_json_data(response)
+        data = self._find_json_data(response)
         
         if data:
             # f = open("bbproduct.json", "w")
@@ -50,7 +50,7 @@ class BestBuy(store.Store):
         logging.warning('No product data found!')
         return None
 
-    def __find_json_data(self, response):
+    def _find_json_data(self, response):
         texts = response.xpath('//script/text()')
 
         for text in texts:
@@ -264,8 +264,6 @@ class BestBuy(store.Store):
             availability=self.__determine_availability(product), 
             condition=condition.Condition.NEW.value, 
             currency=curreny.Currency.CAD.value, 
-            datetime=datetime.datetime.utcnow().isoformat(), 
-            # sku=productDetails['sku'], 
             sold_by=self.sold_by, 
             store_id=self.store_id
         )

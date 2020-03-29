@@ -38,7 +38,7 @@ class Shopify(store.Store):
             logging.error('Unable to determine language!')
             return None
 
-        data = self.__find_json_data(response)
+        data = self._find_json_data(response)
         
         if data:
             return self.__load_with_dictionary(response, data)
@@ -50,7 +50,7 @@ class Shopify(store.Store):
         return availability.Availability.IN_STOCK.value if data \
             else availability.Availability.OUT_OF_STOCK.value
 
-    def __find_json_data(self, response):
+    def _find_json_data(self, response):
         text = response.css('script[data-product-json]::text').get()   
 
         if text:
@@ -94,7 +94,7 @@ class Shopify(store.Store):
         )
         product_loader.add_value(
             product.Product.KEY_MODEL_NUMBER, 
-            data['tags']['vsn']
+            data.get('tags').get('vsn') or data.get('variants')[0].get('sku')
         )
         product_loader.add_value(
             product.Product.KEY_PRODUCT_DATA, 
@@ -148,11 +148,11 @@ class Shopify(store.Store):
         )
         self.product_data_value_loader.add_value(
             field_name=product_data.ProductData.KEY_SKU, 
-            value=data['variants'][0]['sku']
+            value=data.get('variants')[0].get('sku')
         )
         self.product_data_value_loader.add_value(
             field_name=product_data.ProductData.KEY_MODEL_NUMBER, 
-            value=data['tags']['vsn']
+            value=data.get('tags').get('vsn') or data.get('variants')[0].get('sku')
         )
         self.product_data_value_loader.add_value(
             field_name=product_data.ProductData.KEY_SOLD_BY,
@@ -164,7 +164,14 @@ class Shopify(store.Store):
         )
         self.product_data_value_loader.add_value(
             field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
-            value={self.language: {}} # TODO: Fix.
+            value=super()._create_supported_languages_field(self.language)
+        )
+
+        images = data['images']
+
+        self.product_data_value_loader.add_value(
+            field_name=product_data.ProductData.KEY_IMAGES,
+            value=images
         )
 
         return (self.product_data_value_loader.load_item()).get_dictionary()

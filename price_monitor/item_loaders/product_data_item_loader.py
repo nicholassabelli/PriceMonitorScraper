@@ -14,4 +14,5 @@ class ProductDataItemLoader(ItemLoader):
     # description_out = Identity()
     gtin_in = Identity()
     supported_languages_in = Identity()
+    images_out = Identity()
 

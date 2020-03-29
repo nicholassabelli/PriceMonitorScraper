@@ -43,7 +43,6 @@ class Store:
         store_id: str
     ) -> Dict[str, str]:
         offerLoader = offer_item_loader.OfferItemLoader(response=response)
-
         offerLoader.add_value(offer.Offer.KEY_AMOUNT, str(amount))
         offerLoader.add_value(
             offer.Offer.KEY_AVAILABILITY, 
@@ -51,13 +50,12 @@ class Store:
         )
         offerLoader.add_value(offer.Offer.KEY_CONDITION, condition)
         offerLoader.add_value(offer.Offer.KEY_CURRENCY, currency)
-        # offerLoader.add_value(offer.Offer.KEY_DATETIME, datetime)
         offerLoader.add_value(offer.Offer.KEY_SOLD_BY, sold_by)
         offerLoader.add_value(offer.Offer.KEY_STORE_ID, store_id)
 
         return dict(offerLoader.load_item())
 
-    def _create_store_dictionary( # TODO: Rename.
+    def _create_store_dictionary(
         self, 
         response: HtmlResponse,
         domain: str, 
@@ -91,6 +89,15 @@ class Store:
 
         return {
             language: dict(textItemLoader.load_item())
+        }
+
+    def _create_supported_languages_field(
+        self, 
+        language: str
+    ) -> Dict[str, str]:
+
+        return {
+            language: {}
         }
 
     def _create_gtin_field(
