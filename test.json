@@ -6,8 +6,32 @@
         "type": "upc",
         "value": "012345678910"
     },
+    "gtin": [ // This is better.
+        {
+            "type": "upc",
+            "value": "012345678910"
+        }, 
+        {
+            "type": "upc",
+            "value": "012345678910"
+        }
+    ],
+
     "model_number": "HCCPAPY2A",
     "brand": "NINTENDO",
+
+    "name": [
+        {
+            "language": "en", 
+            "value": "Marvel Ultimate Alliance 3: The Black Order (Switch)",
+            "source": "best_buy_canada"
+        },
+        {
+            "language": "fr", 
+            "value": "Marvel Ultimate Alliance 3: The Black Order (Switch)",
+            "source": "best_buy_canada"
+        }
+    ],
 
     "product_data": {
         "best_buy_canada (Best Buy Canada)" : {

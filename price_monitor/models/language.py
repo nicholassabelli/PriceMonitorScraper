@@ -6,3 +6,4 @@ class Language(Enum):
     EN = 'en'
     ES = 'es'
     FR = 'fr'
+    ANY = '*'

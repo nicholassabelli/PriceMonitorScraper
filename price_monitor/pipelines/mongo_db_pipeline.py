@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import logging, pymongo, re
+import logging
+import pymongo
+import re
 from datetime import datetime
 from scrapy.utils.project import get_project_settings
 from price_monitor.items import (
@@ -63,6 +65,7 @@ class MongoDBPipeline(object):
             supported_languages_dictionary=supported_languages_dictionary[lang],
         )
 
+        # TODO: Could have these values set in config no need to lookup values.
         self.__upsert_store(store_dictionary)
 
         insertProduct = False       

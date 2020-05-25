@@ -6,10 +6,11 @@ class IGASpider(Spider):
     allowed_domains = IGA.allowed_domains
     custom_settings = IGA.custom_settings
     start_urls = [
-        'https://www.iga.net/en/product/yop-yogurt-drinkraspberry/00000_000000005692001202',
-        'https://www.iga.net/en/product/yop-yogurt-drinkblueberry/00000_000000005692001210',
-        'https://www.iga.net/en/product/chocolate-milk1-/00000_000000005587210518',
-        'https://www.iga.net/en/product/cheesemarble-cheddar/00000_000000006810090189'
+        # 'https://www.iga.net/en/product/cheesemarble-cheddar/00000_000000006810090189',
+        # 'https://www.iga.net/en/product/cheesemozzarellissima-20-/00000_000000006354999379',
+        # 'https://www.iga.net/en/product/yop-yogurt-drinkraspberry/00000_000000005692001202',
+        # 'https://www.iga.net/en/product/yop-yogurt-drinkblueberry/00000_000000005692001210',
+        'https://www.iga.net/en/product/chocolate-milk1-/00000_000000005587210518'
     ]
 
     def __init__(self, *a, **kw):

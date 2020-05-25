@@ -2,20 +2,18 @@
 
 from scrapy import Item, Field
 
-class Text(Item):
+class Image(Item):
     # Array indexes. 
+    KEY_IS_MAIN = 'is_main'
     KEY_LANGUAGE = 'language'
     KEY_STORE_ID = 'store_id'
-    KEY_VALUE = 'value'
+    KEY_URL = 'url'
 
     # Fields.
+    is_main = Field()
     language = Field()
     store_id = Field()
-    value = Field()
-
-    # def __init__(self, language, value):
-    #     self.language = language
-    #     self.value = value
+    url = Field()
 
     def get_dictionary(self):
         return dict(self)

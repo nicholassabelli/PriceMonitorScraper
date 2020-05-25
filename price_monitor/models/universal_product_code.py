@@ -31,6 +31,8 @@ class UniversalProductCode:
         if self.LENGTH_OF_UPC - 1 == len(upc_list):
             upc_list.append(self.__calculate_check_digit(upc_list)) # TODO: Can have check digit, might need a leading zero.
 
+        # TODO: Add strategiesso that we can fix the number.
+
         self.__value = ''.join(list(map(str, upc_list)))
 
         # TODO: Validate.

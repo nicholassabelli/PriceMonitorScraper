@@ -2,21 +2,22 @@
 
 from scrapy import Item, Field
 
-class Offer(Item): # TODO: Rename to offer.
+class Offer(Item):
     # Array indexes.
     KEY_AMOUNT = 'amount'
     KEY_AVAILABILITY = 'availability'
     KEY_CONDITION = 'condition'
     KEY_CREATED = 'created'
     KEY_CURRENCY = 'currency'
-    KEY_DATETIME = 'datetime'  
+    KEY_DATETIME = 'datetime' 
+    KEY_END_DATE = 'end_date' # TODO: End date, some stores provide this info.
     KEY_ID = '_id'  
     KEY_PRODUCT_ID = 'product_id'
-    KEY_SKU = 'sku' # TODO: SKU is bad for offer, store could reuse for all items in a case.
+    # KEY_SKU = 'sku' # TODO: SKU is bad for offer, store could reuse for all items in a case.
     KEY_SOLD_BY = 'sold_by'
     KEY_STORE_ID = 'store_id'
     KEY_UPDATED = 'updated'
-    
+
     # Fields.
     amount = Field()
     availability = Field()
@@ -24,11 +25,14 @@ class Offer(Item): # TODO: Rename to offer.
     created = Field()
     currency = Field()
     datetime = Field()
+    end_date = Field()
     product_id = Field()
-    sku = Field()
+    # sku = Field()
     sold_by = Field()
     store_id = Field()
     updated = Field()
+
+
 
     # warranty
     # is_on_sale = Field()

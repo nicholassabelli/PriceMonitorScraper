@@ -87,22 +87,25 @@ class Shopify(store.Store):
                 )
             )
 
-        product_loader.add_value(product.Product.KEY_BRAND, data['vendor'])
         product_loader.add_value(
-            product.Product.KEY_CURRENT_OFFER, 
-            self.__create_offer_dictionary(response, data)
+            field_name=product.Product.KEY_BRAND, 
+            value=data['vendor']
         )
         product_loader.add_value(
-            product.Product.KEY_MODEL_NUMBER, 
-            data.get('tags').get('vsn') or data.get('variants')[0].get('sku')
+            field_name=product.Product.KEY_CURRENT_OFFER, 
+            value=self.__create_offer_dictionary(response, data)
         )
         product_loader.add_value(
-            product.Product.KEY_PRODUCT_DATA, 
-            self._create_product_data_dictionary(response, data, upc)
+            field_name=product.Product.KEY_MODEL_NUMBER, 
+            value=data.get('tags').get('vsn') or data.get('variants')[0].get('sku')
         )
         product_loader.add_value(
-            product.Product.KEY_STORE, 
-            self.__create_store_dictionary(response)
+            field_name=product.Product.KEY_PRODUCT_DATA, 
+            value=self._create_product_data_dictionary(response, data, upc)
+        )
+        product_loader.add_value(
+            field_name=product.Product.KEY_STORE, 
+            value=self.__create_store_dictionary(response)
         )
         
         return product_loader.load_item()
@@ -166,12 +169,9 @@ class Shopify(store.Store):
             field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
             value=super()._create_supported_languages_field(self.language)
         )
-
-        images = data['images']
-
         self.product_data_value_loader.add_value(
             field_name=product_data.ProductData.KEY_IMAGES,
-            value=images
+            value=data['images']
         )
 
         return (self.product_data_value_loader.load_item()).get_dictionary()
