@@ -37,14 +37,17 @@ class PriceMonitorDownloaderMiddleware(object):
         # return None
 
         self.driver.get(request.url)
-        self.driver.implicitly_wait(1) # TODO: Config value.
+        self.driver.implicitly_wait(2) # TODO: Config value.
         body = self.driver.page_source
+
+        # TODO: Retry here.
 
         if request.meta is not None and request.meta.get('js_global_variable'):
             data = self.driver.execute_script(f"return {request.meta['js_global_variable']};")
             request.meta['js_data'] = data
 
         return HtmlResponse(self.driver.current_url, body=body, encoding='utf-8', request=request)
+        # return None
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.

@@ -62,32 +62,34 @@ class MongoDBPipeline(object):
             product_data_store_dictionary=product_data_store_dictionary,
             product_dictionary=product_dictionary,
             store_dictionary=store_dictionary,
-            supported_languages_dictionary=supported_languages_dictionary[lang],
+            supported_languages_dictionary=supported_languages_dictionary.get(
+                lang
+            ),
         )
 
         # TODO: Could have these values set in config no need to lookup values.
         self.__upsert_store(store_dictionary)
-
-        insertProduct = False       
+     
+        product_found_by_gtin = self.__find_product_found_by_gtin(
+            product_dictionary
+        ) if product_dictionary.get(product.Product.KEY_GTIN) else None
         product_found_by_store_and_number = None
-        product_found_by_gtin = self.__find_product_found_by_gtin(product_dictionary) \
-            if product_dictionary.get(product.Product.KEY_GTIN) else None
+        model_number = product_dictionary.get(
+            product.Product.KEY_MODEL_NUMBER
+        )
+        brand=product_dictionary.get(
+            product.Product.KEY_BRAND
+        )
 
-        if not product_found_by_gtin:
+        if not product_found_by_gtin and model_number and brand:
             product_found_by_store_and_number = \
                 self.__find_product_by_model_number_and_brand(
-                    model_number=product_dictionary[
-                        product.Product.KEY_MODEL_NUMBER
-                    ],
-                    brand=product_dictionary[
-                        product.Product.KEY_BRAND
-                    ],
+                    model_number=model_number,
+                    brand=brand,
                 )
 
-            if not product_found_by_store_and_number:
-                insertProduct = True 
-
-        if insertProduct:
+        if not product_found_by_gtin and not product_found_by_store_and_number: 
+            # Insert product.
             product_dictionary[
                 product.Product.KEY_PRODUCT_DATA
             ] = product_data_dictionary

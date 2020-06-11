@@ -8,7 +8,7 @@ try:
         [
             'scrapy',
             'crawl',
-            'toysrus_spider',
+            'metro_spider',
         ]
     )
 except SystemExit:

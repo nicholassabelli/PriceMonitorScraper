@@ -14,14 +14,14 @@ from typing import (
 from price_monitor.items import (
     offer,
     product,
-    product_data
+    product_data,
 )
 from price_monitor.item_loaders import (
     offer_item_loader,
     iga_product_item_loader,
     store_item_loader,
     product_item_loader,
-    product_data_item_loader
+    product_data_item_loader,
 )
 from price_monitor.models import (
     availability,
@@ -31,7 +31,7 @@ from price_monitor.models import (
     language,
     region,
     store,
-    universal_product_code
+    universal_product_code,
 )
 
 class IGA(store.Store):
@@ -53,7 +53,10 @@ class IGA(store.Store):
         }
     }
 
-    def parse_product(self, response: HtmlResponse) -> Optional[product.Product]:
+    def parse_product(
+        self, 
+        response: HtmlResponse,
+    ) -> Optional[product.Product]:
         self.language = self._determine_language_from_url(response.url)
 
         if not self.language:
@@ -63,7 +66,7 @@ class IGA(store.Store):
         data = self._find_json_data(response)
         
         if data:
-            return self.__load_with_dictionary(response, data)
+            return self._create_product_dictionary(response, data)
 
         logging.warning('No product data found!')
         return None
@@ -87,7 +90,7 @@ class IGA(store.Store):
         product_data = response.css(css_path).extract()
 
         if not product_data:
-            logging.error('Unable to load JSON data.')
+            logging.error('Unable to load JSON data.') # TODO: Log URL.
             return None
 
         try:
@@ -106,15 +109,11 @@ class IGA(store.Store):
         except:
             logging.error('Unable to load JSON data.')
 
-    def __load_with_dictionary(
+    def _create_product_dictionary(
         self, 
         response: HtmlResponse, 
-        data: Dict,
+        data: Optional[Dict] = None,
     ) -> product.Product:
-        product_loader = product_item_loader.ProductItemLoader(
-            response=response
-        )
-
         try:
             upc = (
                 universal_product_code.UniversalProductCode(
@@ -122,180 +121,112 @@ class IGA(store.Store):
                 )
             ).value
         except:
-            upc = None
+            # TODO: Log issue and return nothing.
+            return None
 
-        if upc:
-            product_loader.add_value(
-                product.Product.KEY_GTIN, 
-                value=super()._create_gtin_field(
-                    response=response, 
-                    type=global_trade_item_number
-                        .GlobalTradeItemNumber.UPCA.value, 
-                    value=upc
-                )
-            )
+        title1 = response.css(
+                    'meta[property="og:title"]::attr(content)'
+                ).extract()[0].split('|')[0]
+        title2 = response.css('title::text').get()
+        name = title1 or title2
 
-        product_loader.add_value(
-            field_name=product.Product.KEY_BRAND, 
-            value=data.get('BrandName')
-        )
-        product_loader.add_value(
-            field_name=product.Product.KEY_CURRENT_OFFER, 
-            value=self.__create_offer_dictionary(response, data)
-        )
-        product_loader.add_value(
-            field_name=product.Product.KEY_MODEL_NUMBER, 
-            value=upc
-        )
-        product_loader.add_value(
-            field_name=product.Product.KEY_PRODUCT_DATA, 
-            value=self.__create_product_data_dictionary(response, data, upc)
-        )
-        product_loader.add_value(
-            field_name=product.Product.KEY_STORE, 
-            value=self.__create_store_dictionary(response)
-        )
+        if not name:
+            pass # TODO: Log error and return none.
+        elif name == 'Grocery Product' or name == 'Produit épicerie en ligne':
+            pass # TODO: Log error and return none.
 
-        return product_loader.load_item()
+        brand = data.get('BrandName')
 
-    def __create_product_data_dictionary(
-        self, 
-        response: HtmlResponse, 
-        data: Dict, 
-        upc: str,
-    ) -> Dict:
-        return super()._create_product_data_dictionary(
+        item_loader = product_item_loader.ProductItemLoader(
+            response=response
+        ).add_name(
             response=response,
-            name=response.css('title::text').get(),
-            brand=data.get('BrandName'), 
-            upc=upc,
-            sku=upc, 
-            images=response.css(
-                'meta[property="og:image"]::attr(content)'
-            ).extract(),
-        )
-
-    def __create_offer_dictionary(
-        self, 
-        response: HtmlResponse, 
-        data: Dict,
-    ) -> Dict:
-        return super()._create_offer_dictionary(
-            response=response,
-            amount=data.get('SalesPrice') or data.get('RegularPrice'),
-            availability=availability.Availability.IN_STOCK.value,
-            condition=condition.Condition.NEW.value,
-            currency=curreny.Currency.CAD.value,
+            name=name, # TODO: What about if it's none.
+            language=self.language,
+            store_id=self.store_id,
             sold_by=self.sold_by,
-            store_id=self.store_id
+        ).add_brand(
+            response=response,
+            brand=brand, # TODO: What about if it's none.
+            language=self.language,
+            store_id=self.store_id,
+            sold_by=self.sold_by,
+        ).add_upc(response=response, upc=upc) \
+        .add_product_data_dictionary(
+            product_data_dictionary=self._create_product_data_dictionary(
+                response=response,
+                data=data,
+                name=name,
+                upc=upc,
+            ),
+        ).add_offer_dictionary(
+            offer_dictionary=self._create_offer_dictionary(
+                response=response, 
+                data=data, 
+            ),
+        ).add_store_dictionary(
+            store_dictionary=self._create_store_dictionary(
+                response=response, 
+            ),
         )
 
-    def __create_store_dictionary(self, response: HtmlResponse) -> Dict:
-        return super()._create_store_dictionary(
-            response=response, 
-            domain=self.domain, 
-            store_id=self.store_id, 
-            store_name=self.store_name, 
-            region=self.region
-        )
+        return item_loader.load_item()
 
-    # def __get_price(self, response):
-    #     offerLoader = offer_item_loader.OfferItemLoader(response=response)
-    #     offerLoader.add_css(offer.Offer.KEY_AMOUNT, ['#body_0_main_1_ListOfPrices span.price[itemprop=price]'])
-    #     # offerLoader.add_value(Offer.KEY_AVAILABILITY, Availability.IN_STOCK.value)
-    #     offerLoader.add_value(offer.Offer.KEY_CURRENCY, curreny.Currency.CAD.value)
-    #     offerLoader.add_value(offer.Offer.KEY_CONDITION, condition.Condition.NEW.value)
-    #     offerLoader.add_value(offer.Offer.KEY_DATETIME, [datetime.datetime.utcnow().isoformat()])
-    #     offerLoader.add_value(offer.Offer.KEY_SOLD_BY, [self.sold_by])
-    #     offerLoader.add_value(offer.Offer.KEY_STORE_ID, [self.store_id])
-    #     return dict(offerLoader.load_item())
+    def _create_product_data_dictionary(
+        self, 
+        response: HtmlResponse,
+        name: str,
+        brand: Optional[str] = None,
+        model_number: Optional[str] = None,
+        upc: Optional[str] = None,
+        data: Optional[Dict] = None,
+    ) -> Dict:
+        item = product_data_item_loader \
+            .ProductDataItemLoader(response=response) \
+            .add_name(
+                response=response,
+                name=name, # TODO: Can sometimes appear as "Grocery Product" or "Produit épicerie en ligne". 
+                language=self.language,
+            ).add_brand(
+                response=response,
+                brand=brand,
+                language=self.language,
+            ).add_sku(sku=upc) \
+            .add_upc(response=response, upc=upc) \
+            .add_images_as_lookup(
+                response=response,
+                urls=response.css(
+                    'meta[property="og:image"]::attr(content)'
+                ).extract(),
+                language=self.language,
+                store_id=self.store_id,
+                sold_by=self.sold_by,
+            ).add_supported_language(language=self.language) \
+            .add_store_id(store_id=self.store_id) \
+            .add_sold_by(sold_by=self.sold_by) \
+            .load_item()
+        
+        return item.get_dictionary()
 
-    # def __get_store(self, response):
-    #     storeLoader = store_item_loader.StoreItemLoader(response=response)
-    #     storeLoader.add_value(store_item.StoreItem.KEY_DOMAIN, [self.domain])
-    #     storeLoader.add_value(store_item.StoreItem.KEY_ID, [self.store_id])
-    #     storeLoader.add_value(store_item.StoreItem.KEY_NAME, [self.store_name])
-    #     storeLoader.add_value(store_item.StoreItem.KEY_REGION, self.region)
-    #     return dict(storeLoader.load_item())
+    def _create_offer_dictionary(
+        self, 
+        response: HtmlResponse, 
+        data: Optional[Dict] = None,
+    ) -> Dict:
+        amount=str(data.get('SalesPrice') or data.get('RegularPrice')),
 
-            # product_loader = iga_product_item_loader.IGAProductItemLoader(
-        #     response=response
-        # )
+        if not amount:
+            pass # TODO: If unable to find amount then log and return nothing.
 
-        # # productLoader.add_value(Product.KEY_STORE, [self.store_name])
-        # # productLoader.add_value(Product.KEY_SOLD_BY, [self.sold_by])
-        # # productLoader.add_value(Product.KEY_DOMAIN, [self.domain])
-        # productLoader.add_css(product.Product.KEY_NAME, ['h1.product-detail__name', 'title'])
-        # productLoader.add_value(product.Product.KEY_CURRENT_OFFER, [self.__get_price(response)])
-        # productLoader.add_value(product.Product.KEY_URL, [response.url])
-        # productLoader.add_css(product.Product.KEY_BRAND, ['span.product-detail__brand'])
-        # # productLoader.add_xpath(Product.KEY_TAGS, ['//ul[contains(concat(" ", normalize-space(@class), " "), " breadcrumb ")]/li[last()-1]/a/@href'])
-        # productLoader.add_value(product.Product.KEY_UPC, [response.url])
-        # productLoader.add_value(product.Product.KEY_STORE, self.__get_store(response))
-        # return productLoader.load_item()
+        item = offer_item_loader.OfferItemLoader(response=response) \
+            .add_store_id(store_id=self.store_id) \
+            .add_sold_by(sold_by=self.sold_by) \
+            .add_amount(
+                amount=amount,
+            ).add_currency(currency=curreny.Currency.CAD.value) \
+            .add_availability(
+                availability=availability.Availability.IN_STOCK.value,
+            ).add_condition(condition=condition.Condition.NEW.value) \
+            .load_item()
 
-        # data['tags'] = self.__parse_tags(data['tags'])
-
-
-            # # TODO: Define empty method in parent, or with fields that don't change.
-    # def _create_product_data_dictionary(self, response: HtmlResponse, data: Dict, upc: str) -> Dict:
-    #     # super()._create_product_data_dictionary(response, data, upc)
-
-    #     self.item_loader = \
-    #         product_data_item_loader.ProductDataItemLoader(response=response)
-
-    #     if upc:
-    #         self.item_loader.add_value(
-    #             field_name=product.Product.KEY_GTIN,
-    #             value=super()._create_gtin_field(
-    #                 response=response,
-    #                 type=global_trade_item_number \
-    #                     .GlobalTradeItemNumber.UPCA.value,
-    #                 value=upc
-    #             )
-    #         )
-
-    #     self.item_loader.add_value(
-    #         field_name=product_data.ProductData.KEY_URL,
-    #         value=response.url
-    #     )
-    #     self.item_loader.add_value(
-    #         field_name=product_data.ProductData.KEY_NAME,
-    #         value=super()._create_text_field(
-    #             response=response,
-    #             value=response.css('title::text').get(),
-    #             language=self.language
-    #         )
-    #     )
-    #     self.item_loader.add_value(
-    #         field_name=product_data.ProductData.KEY_BRAND,
-    #         value=data.get('BrandName')
-    #     )
-    #     self.item_loader.add_value(
-    #         field_name=product_data.ProductData.KEY_SKU, 
-    #         value=upc
-    #     )
-    #     self.item_loader.add_value(
-    #         field_name=product_data.ProductData.KEY_MODEL_NUMBER,
-    #         value=upc
-    #     )
-    #     self.item_loader.add_value(
-    #         field_name=product_data.ProductData.KEY_SOLD_BY,
-    #         value=self.sold_by
-    #     )
-    #     self.item_loader.add_value(
-    #         field_name=product_data.ProductData.KEY_STORE_ID, 
-    #         value=self.store_id
-    #     )
-    #     self.item_loader.add_value(
-    #         field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
-    #         value=super()._create_supported_languages_field(self.language)
-    #     )        
-    #     self.item_loader.add_value(
-    #         field_name=product_data.ProductData.KEY_IMAGES,
-    #         value=response.css(
-    #             'meta[property="og:image"]::attr(content)'
-    #         ).extract()
-    #     )
-
-    #     return (self.item_loader.load_item()).get_dictionary()
+        return item.get_dictionary()

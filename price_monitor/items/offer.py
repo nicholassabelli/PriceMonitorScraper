@@ -51,3 +51,6 @@ class Offer(Item):
 
     # KEY_REGION = 'region'
     # region = Field()
+
+    def get_dictionary(self):
+        return dict(self)

@@ -16,6 +16,11 @@ class StoreItem(Item):
     created = Field()
     domain = Field()
     name = Field()
-    region = Field()
+    region = Field() # TODO: Sub-regions.
     updated = Field()
+
+    # TODO: Locations.
+
+    def get_dictionary(self):
+        return dict(self)
     
