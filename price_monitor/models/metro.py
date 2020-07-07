@@ -35,6 +35,7 @@ from price_monitor.models import (
     store,
     universal_product_code,
 )
+from scrapy.utils.project import get_project_settings
 
 class Metro(store.Store):
     store_id = 'metro'
@@ -43,10 +44,11 @@ class Metro(store.Store):
     region = region.Region.CANADA.value
     domain = 'metro.ca'
     allowed_domains = [domain]
+    version = get_project_settings().get('VERSION_PRODUCT_DATA_METRO')
     custom_settings = {
         'ITEM_PIPELINES': {
             # 'price_monitor.pipelines.StripAmountPipeline': 300,
-            # 'price_monitor.pipelines.BreadcrumbTagsPipeline': 800,
+            'price_monitor.pipelines.breadcrumb_tags_pipeline.BreadcrumbTagsPipeline': 800,
             # 'price_monitor.pipelines.UniversalProductCodePipeline': 900,
             'price_monitor.pipelines.mongo_db_pipeline.MongoDBPipeline': 1000
         },
@@ -79,32 +81,6 @@ class Metro(store.Store):
         return availability.Availability.IN_STOCK.value if data \
             else availability.Availability.OUT_OF_STOCK.value
 
-    # def _find_json_data(self, response: HtmlResponse) -> Optional[Dict]:
-    #     css_path = "div.product-details.js-ga-productdetails > " + \
-    #        "div.relative::attr(data-product)"
-
-    #     product_data = response.css(css_path).extract()
-
-    #     if not product_data:
-    #         logging.error('Unable to load JSON data.') # TODO: Log URL.
-    #         return None
-
-    #     try:
-    #         return json.loads(product_data[0])
-    #     except:
-    #         pass
-
-    #     # try:
-    #     #     return ast.literal_eval(product_data[0])
-    #     # except:
-    #     #     pass
-
-    #     try:
-    #         data = product_data[0].replace("'", '"')
-    #         return json.loads(data)
-    #     except:
-    #         logging.error('Unable to load JSON data.')
-
     def _create_product_dictionary(
         self, 
         response: HtmlResponse, 
@@ -123,28 +99,26 @@ class Metro(store.Store):
         name1 = response.css(
             "div.product-info.item-addToCart > a.invisible-text::text"
         ).extract()
-        name2 = response.css('title::text') \
-            .extract()[0].split('|')[0]
+        name2 = response.css(
+            'title::text'
+        ).extract()[0].split('|')[0]
         name = name1 or name2
 
         if not name:
             pass # TODO: Log error and return none.
 
-        brand = response.css('span[itemprop="brand"]::text').extract()
+        brand = response.css('div[itemtype="http://schema.org/Product"] \
+            > span[itemprop="brand"]::text').extract()
         item_loader = product_item_loader.ProductItemLoader(
             response=response
         ).add_name(
             response=response,
-            name=name, # TODO: What about if it's none.
+            name=name,
             language=self.language,
-            store_id=self.store_id,
-            sold_by=self.sold_by,
         ).add_brand(
             response=response,
-            brand=brand, # TODO: What about if it's none.
+            brand=brand,
             language=self.language,
-            store_id=self.store_id,
-            sold_by=self.sold_by,
         ).add_upc(response=response, upc=upc) \
         .add_product_data_dictionary(
             product_data_dictionary=self._create_product_data_dictionary(
@@ -156,14 +130,14 @@ class Metro(store.Store):
             ),
         ).add_offer_dictionary(
             offer_dictionary=self._create_offer_dictionary(
-                response=response, 
+                response=response,
                 data=data, 
             ),
         ).add_store_dictionary(
             store_dictionary=self._create_store_dictionary(
-                response=response, 
+                response=response,
             ),
-        )
+        ).add_supported_language(language=self.language)
 
         return item_loader.load_item()
 
@@ -176,38 +150,36 @@ class Metro(store.Store):
         upc: Optional[str] = None,
         data: Optional[Dict] = None,
     ) -> Dict:
+        breadcrumbs = response.css(
+            'ul[itemtype="http://schema.org/BreadcrumbList"] \
+                > li[itemtype="http://schema.org/ListItem"] \
+                > a[itemtype="http://schema.org/Thing"] \
+                > span[itemprop="name"]::text'
+        ).getall()
+
         item = product_data_item_loader \
             .ProductDataItemLoader(response=response) \
-            .add_name(
-                response=response,
-                name=name,
-                language=self.language,
-            ).add_brand(
+            .add_language_data(
                 response=response,
                 brand=brand,
-                language=self.language,
-            ).add_sku(sku=upc) \
-            .add_upc(response=response, upc=upc) \
-            .add_description(
-                response=response,
-                description=response.css(
-                    'span[itemprop="description"]::text'
-                ).get(),
-                language=self.language,
-            ).add_images_as_lookup(
-                response=response,
-                urls=response.css(
+                images=response.css(
                     'div[itemtype="http://schema.org/Product"] \
                         > span[itemprop="image"]::text'
                 ).getall(),
-                language=self.language,
-                store_id=self.store_id,
-                sold_by=self.sold_by,
-            ).add_supported_language(language=self.language) \
+                name=name,
+                url=response.url,
+                description=response.css(
+                    'div[itemtype="http://schema.org/Product"] \
+                        > span[itemprop="description"]::text'
+                ).get(),
+                breadcrumbs=breadcrumbs,
+            ).add_sku(sku=upc) \
+            .add_upc(response=response, upc=upc) \
             .add_store_id(store_id=self.store_id) \
             .add_sold_by(sold_by=self.sold_by) \
+            .add_version(version=self.version) \
             .load_item()
-        
+
         return item.get_dictionary()
 
     def _create_offer_dictionary(
@@ -229,10 +201,11 @@ class Metro(store.Store):
                 offer.Offer(price=float(price), valid_until=valid_through)
             )
 
+        # Order to get the sales price.
         offer_objects.sort(key=lambda x: x.price)
 
         amount = offer_objects[0].price
-        valid_until = offer_objects[0].valid_until
+        valid_until = offer_objects[0].valid_until # TODO: Add valid until.
         item = offer_item_loader.OfferItemLoader(response=response) \
             .add_store_id(store_id=self.store_id) \
             .add_sold_by(sold_by=self.sold_by) \

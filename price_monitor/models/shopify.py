@@ -165,10 +165,10 @@ class Shopify(store.Store):
             field_name=product_data.ProductData.KEY_STORE_ID, 
             value=self.store_id
         )
-        self.product_data_value_loader.add_value(
-            field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
-            value=super()._create_supported_languages_field(self.language)
-        )
+        # self.product_data_value_loader.add_value(
+        #     field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
+        #     value=super()._create_supported_languages_field(self.language)
+        # )
         self.product_data_value_loader.add_value(
             field_name=product_data.ProductData.KEY_IMAGES,
             value=data['images']

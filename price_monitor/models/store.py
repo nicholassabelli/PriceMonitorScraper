@@ -40,6 +40,7 @@ class Store:
     region = None
     domain = None
     language = None
+    version = None
     allowed_domains = []
     custom_settings = {}
 

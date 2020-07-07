@@ -96,3 +96,25 @@ MONGODB_DB = 'price_monitor'
 MONGODB_COLLECTION_PRODUCTS = 'products'
 MONGODB_COLLECTION_OFFERS = 'offers'
 MONGODB_COLLECTION_STORES = 'stores'
+
+# Item and model version numbers.
+PRODUCT_ITEM_VERSION = 1.0     # TODO: Rename.
+# PRODUCT_DATA_ITEM_VERSION = 1.0
+# LANGUAGE_DATA_VERSION = 1.0
+OFFER_ITEM_VERSION = 1.0
+STORE_ITEM_VERSION = 1.0
+
+# Store model product data versions.
+VERSION_PRODUCT_DATA_IGA = 1.0
+VERSION_PRODUCT_DATA_METRO = 1.0
+
+# Breadcrumbs.
+BREADCRUMB_BLOCKLIST = [
+    'Home',
+    'Online Grocery',
+    'Aisles',
+    'Accueil',
+    'Épicerie en ligne',
+    'Allées',
+    'IGA',
+]

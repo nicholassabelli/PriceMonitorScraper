@@ -33,6 +33,7 @@ from price_monitor.models import (
     store,
     universal_product_code,
 )
+from scrapy.utils.project import get_project_settings
 
 class IGA(store.Store):
     store_id = 'iga'
@@ -41,10 +42,11 @@ class IGA(store.Store):
     region = region.Region.CANADA.value
     domain = 'iga.net'
     allowed_domains = [domain]
+    version = get_project_settings().get('VERSION_PRODUCT_DATA_IGA')
     custom_settings = {
         'ITEM_PIPELINES': {
             # 'price_monitor.pipelines.IGAStripAmountPipeline': 300,
-            # 'price_monitor.pipelines.BreadcrumbTagsPipeline': 800,
+            'price_monitor.pipelines.breadcrumb_tags_pipeline.BreadcrumbTagsPipeline': 800,
             # 'price_monitor.pipelines.IGAUniversalProductCodePipeline': 900,
             'price_monitor.pipelines.mongo_db_pipeline.MongoDBPipeline': 1000
         },
@@ -74,7 +76,7 @@ class IGA(store.Store):
     def _determine_language_from_url(self, url: str) -> str:
         if re.search(f'www.{self.domain}/en/product/', url):
             return language.Language.EN.value
-        elif re.search(f'www.{self.domain}/fr/product/', url):
+        elif re.search(f'www.{self.domain}/fr/produit/', url):
             return language.Language.FR.value
         
         return None
@@ -137,38 +139,38 @@ class IGA(store.Store):
 
         brand = data.get('BrandName')
 
+        if not name:
+            pass # TODO: Log error and return none.
+
         item_loader = product_item_loader.ProductItemLoader(
             response=response
         ).add_name(
             response=response,
             name=name, # TODO: What about if it's none.
             language=self.language,
-            store_id=self.store_id,
-            sold_by=self.sold_by,
         ).add_brand(
             response=response,
             brand=brand, # TODO: What about if it's none.
             language=self.language,
-            store_id=self.store_id,
-            sold_by=self.sold_by,
         ).add_upc(response=response, upc=upc) \
         .add_product_data_dictionary(
             product_data_dictionary=self._create_product_data_dictionary(
                 response=response,
                 data=data,
                 name=name,
+                brand=brand,
                 upc=upc,
             ),
         ).add_offer_dictionary(
             offer_dictionary=self._create_offer_dictionary(
-                response=response, 
+                response=response,
                 data=data, 
             ),
         ).add_store_dictionary(
             store_dictionary=self._create_store_dictionary(
-                response=response, 
+                response=response,
             ),
-        )
+        ).add_supported_language(language=self.language)
 
         return item_loader.load_item()
 
@@ -181,31 +183,31 @@ class IGA(store.Store):
         upc: Optional[str] = None,
         data: Optional[Dict] = None,
     ) -> Dict:
+        breadcrumbs = response.css(
+            'ul.nav.breadcrumb \
+                > li[itemtype="http://data-vocabulary.org/Breadcrumb"] \
+                > a[itemprop="url"] \
+                > span[itemprop="title"]::text'
+        ).getall()
+
         item = product_data_item_loader \
             .ProductDataItemLoader(response=response) \
-            .add_name(
-                response=response,
-                name=name, # TODO: Can sometimes appear as "Grocery Product" or "Produit épicerie en ligne". 
-                language=self.language,
-            ).add_brand(
+            .add_language_data(
                 response=response,
                 brand=brand,
-                language=self.language,
-            ).add_sku(sku=upc) \
-            .add_upc(response=response, upc=upc) \
-            .add_images_as_lookup(
-                response=response,
-                urls=response.css(
+                images=response.css(
                     'meta[property="og:image"]::attr(content)'
                 ).extract(),
-                language=self.language,
-                store_id=self.store_id,
-                sold_by=self.sold_by,
-            ).add_supported_language(language=self.language) \
+                name=name,
+                url=response.url,
+                breadcrumbs=breadcrumbs
+            ).add_sku(sku=upc) \
+            .add_upc(response=response, upc=upc) \
             .add_store_id(store_id=self.store_id) \
             .add_sold_by(sold_by=self.sold_by) \
+            .add_version(version=self.version) \
             .load_item()
-        
+
         return item.get_dictionary()
 
     def _create_offer_dictionary(
@@ -213,11 +215,12 @@ class IGA(store.Store):
         response: HtmlResponse, 
         data: Optional[Dict] = None,
     ) -> Dict:
-        amount=str(data.get('SalesPrice') or data.get('RegularPrice')),
+        amount = str(data.get('SalesPrice') or data.get('RegularPrice')),
 
         if not amount:
             pass # TODO: If unable to find amount then log and return nothing.
 
+        # TODO: Add valid until.
         item = offer_item_loader.OfferItemLoader(response=response) \
             .add_store_id(store_id=self.store_id) \
             .add_sold_by(sold_by=self.sold_by) \

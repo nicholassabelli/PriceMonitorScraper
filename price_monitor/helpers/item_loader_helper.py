@@ -5,11 +5,13 @@ from scrapy.http.response.html import HtmlResponse
 from price_monitor.items import (
     global_trade_item_number_item,
     image,
+    language_data,
     text,
 )
 from price_monitor.item_loaders import (
     global_trade_item_number_loader,
     image_item_loader,
+    language_data_item_loader,
     text_item_loader,
 )
 from price_monitor.models import (
@@ -24,22 +26,14 @@ from typing import (
 
 class ItemLoaderHelper:
     @staticmethod
-    def remove_latin_space(text: str):
-        return text.replace(u'\xa0', u' ')
-    
-    @staticmethod
     def _create_text_field(
         response: HtmlResponse, 
         value: str, 
         language: str,
-        store_id: str,
-        sold_by: str, 
     ) -> Dict[str, Dict[str, str]]:
         item_loader = text_item_loader.TextItemLoader(response=response)
         item_loader.add_value(text.Text.KEY_VALUE, value)
         item_loader.add_value(text.Text.KEY_LANGUAGE, language)
-        item_loader.add_value(text.Text.KEY_STORE_ID, store_id)
-        item_loader.add_value(text.Text.KEY_SOLD_BY, sold_by)
         
         return item_loader.load_item().get_dictionary()
     
@@ -86,50 +80,20 @@ class ItemLoaderHelper:
     @staticmethod
     def _create_image_field(
         response: HtmlResponse, 
-        url: str, 
-        language: str,
-        store_id: Optional[str],
-        sold_by: str
-        # is_main: bool = False,
+        url: str,
+        source: Optional[str] = None,
+        language: Optional[str] = None,
     ) -> Dict[str, Union[str, bool]]:
         item_loader = image_item_loader.ImageItemLoader(response=response)
         item_loader.add_value(image.Image.KEY_LANGUAGE, language)
         item_loader.add_value(image.Image.KEY_URL, url)
-        # item_loader.add_value(image.Image.KEY_IS_MAIN, is_main)
-
-        # if store_id:
-        item_loader.add_value(image.Image.KEY_STORE_ID, store_id)
-        item_loader.add_value(image.Image.KEY_SOLD_BY, sold_by)
-
+        
         return dict(item_loader.load_item())
-
-    @staticmethod
-    def _create_image_field_as_lookup(
-        response: HtmlResponse,
-        urls: str,
-        language: str,
-        store_id: Optional[str],
-        sold_by: str
-        # is_main: bool = False,
-    ) -> Dict[str, List]:
-        return {
-            language: ItemLoaderHelper._create_image_field_from_list(
-                response=response,
-                urls=urls,
-                language=language,
-                store_id=store_id,
-                sold_by=sold_by,
-            )
-        }
         
     @staticmethod
     def _create_image_field_from_list(
         response: HtmlResponse,
         urls: str,
-        language: str,
-        store_id: Optional[str],
-        sold_by: str
-        # has_main: bool = False,
     ) -> List[Dict[str, Union[str, bool]]]:
         result = []
 
@@ -137,10 +101,32 @@ class ItemLoaderHelper:
             result.append(ItemLoaderHelper._create_image_field(
                 response=response,
                 url=url,
-                language=language,
-                store_id=store_id,
-                sold_by=sold_by,
             ))
-            # has_main = False # Sets the first image to be the main one, if the argument was set.
 
         return result
+
+    @staticmethod
+    def _create_language_data_field(
+        response: HtmlResponse,
+        brand: str,
+        images: List,
+        name: str,
+        url: str,
+        description: Optional[str] = None,
+        breadcrumbs: Optional[List] = None,
+    ) -> List[str]:
+        item_loader = language_data_item_loader.LanguageDataItemLoader(
+            response=response
+        ).add_name(name=name) \
+        .add_brand(brand=brand) \
+        .add_images(images=images) \
+        .add_url(url=url)
+
+        if description:
+            item_loader.add_description(description=description)
+
+        if breadcrumbs:
+            item_loader.add_breadcrumbs(breadcrumbs=breadcrumbs)
+
+        return item_loader.load_item().get_dictionary()
+    

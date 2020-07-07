@@ -135,10 +135,10 @@ class Toysrus(store.Store):
                 language=language.Language.EN.value 
             )
         )
-        product_data_value_loader.add_value(
-            field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
-            value={language.Language.EN.value: {}} # TODO: Fixed.
-        )
+        # product_data_value_loader.add_value(
+        #     field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
+        #     value={language.Language.EN.value: {}} # TODO: Fixed.
+        # )
         product_data_value_loader.add_value(
             field_name=product_data.ProductData.KEY_MODEL_NUMBER, 
             value=data['additionalInfo']['Numéro fabricant']

@@ -12,7 +12,10 @@ from w3lib.html import (
 )
 from price_monitor.items import product
 from scrapy.http.response.html import HtmlResponse
-from price_monitor.helpers import item_loader_helper
+from price_monitor.helpers import (
+    item_loader_helper,
+    input_processor_helper,
+)
 from price_monitor.models import (
     availability,
     condition,
@@ -37,7 +40,7 @@ class ProductItemLoader(ItemLoader):
     default_input_processor = MapCompose(
         remove_tags, 
         replace_escape_chars, 
-        item_loader_helper.ItemLoaderHelper.remove_latin_space, 
+        input_processor_helper.InputProcessorHelper.remove_latin_space, 
         replace_entities
     )
     default_output_processor = TakeFirst()
@@ -50,14 +53,13 @@ class ProductItemLoader(ItemLoader):
     name_out = Identity()
     product_data_in = Identity()
     store_in = Identity()
+    supported_languages_out = Identity()
 
     def add_brand(
         self, 
         response: HtmlResponse, 
         brand: str, #TODO: Optional?
         language: str, 
-        store_id: str,
-        sold_by: str,
     ) -> ProductItemLoader:
         self.add_value(
             field_name=product.Product.KEY_BRAND,
@@ -65,8 +67,6 @@ class ProductItemLoader(ItemLoader):
                 response=response,
                 value=brand,
                 language=language,
-                store_id=store_id,
-                sold_by=sold_by,
             )],
         )
         return self
@@ -83,8 +83,6 @@ class ProductItemLoader(ItemLoader):
         response: HtmlResponse, 
         name: str, 
         language: str, 
-        store_id: str,
-        sold_by: str,
     ) -> ProductItemLoader:
         self.add_value(
             field_name=product.Product.KEY_NAME,
@@ -92,8 +90,6 @@ class ProductItemLoader(ItemLoader):
                 response=response,
                 value=name,
                 language=language,
-                store_id=store_id,
-                sold_by=sold_by,
             )],
         )
         return self
@@ -128,6 +124,16 @@ class ProductItemLoader(ItemLoader):
         )
         return self
 
+    def add_supported_language(
+        self,
+        language: str,
+    ) -> ProductItemLoader:
+        self.add_value(
+            field_name=product.Product.KEY_SUPPORTED_LANGUAGES, 
+            value=self.__create_supported_languages_field(language),
+        )
+        return self
+
     def add_upc(self, response: HtmlResponse, upc: str) -> ProductItemLoader: #TODO: Optional? UPC
         self.add_value(
             field_name=product.Product.KEY_GTIN,
@@ -140,5 +146,19 @@ class ProductItemLoader(ItemLoader):
         )
         return self
 
+    def __create_supported_languages_field(
+        self, 
+        language: str,
+    ) -> List[str]:
+        return [
+            language,
+        ]
+    
+    # def add_version(self, version: str) -> ProductItemLoader:
+    #     self.add_value(
+    #         field_name=product.Product.KEY_VERSION, 
+    #         value=version
+    #     )
+    #     return self
 
     # TODO: Check fields are all filled and warn if not and return nothing.

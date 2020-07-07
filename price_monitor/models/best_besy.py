@@ -210,10 +210,10 @@ class BestBuy(store.Store):
             offer.Offer.KEY_STORE_ID,
             self.store_id
         )
-        product_data_value_loader.add_value(
-            field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
-            value={language.Language.EN.value: {}} # TODO: Fixed.
-        )
+        # product_data_value_loader.add_value(
+        #     field_name=product_data.ProductData.KEY_SUPPORTED_LANGUAGES,
+        #     value={language.Language.EN.value: {}} # TODO: Fixed.
+        # )
 
         if upc:
             product_data_value_loader.add_value(

@@ -1,6 +1,8 @@
-# -*- coding: utf-8 -*-
-
-from scrapy import Item, Field
+from scrapy import (
+    Field,
+    Item,
+)
+from scrapy.utils.project import get_project_settings
 
 class StoreItem(Item):
     # Array indexes.
@@ -10,6 +12,7 @@ class StoreItem(Item):
     KEY_NAME = 'name'  
     KEY_REGION = 'region'
     KEY_UPDATED = 'updated'
+    KEY_VERSION = 'version' # Not an item field.
 
     # Fields.
     _id = Field()
@@ -22,5 +25,10 @@ class StoreItem(Item):
     # TODO: Locations.
 
     def get_dictionary(self):
-        return dict(self)
+        dictionary = dict(self)
+        dictionary[self.KEY_VERSION] = self.get_version()
+        return dictionary
+
+    def get_version(self):
+        return get_project_settings().get('STORE_ITEM_VERSION')
     
